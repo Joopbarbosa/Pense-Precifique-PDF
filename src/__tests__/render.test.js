@@ -88,12 +88,7 @@ describe('GET /render/orcamento/:id?format=html', () => {
 
     expect(res.status).toBe(400);
   });
-
-  test('format=pdf retorna 501 (ainda não implementado)', async () => {
-    const res = await request(app)
-      .get('/render/orcamento/e5f5c3a0-0000-0000-0000-000000000006?format=pdf')
-      .send(payloadValido);
-
-    expect(res.status).toBe(501);
-  });
 });
+
+// Testes de format=pdf ficam em render.pdf.test.js — precisam mockar `puppeteer-core` e setar
+// RENDER_TIMEOUT_SECONDS baixo antes do require de `../index`, o que exige módulo isolado.

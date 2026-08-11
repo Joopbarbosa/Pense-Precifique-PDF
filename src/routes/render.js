@@ -1,9 +1,14 @@
 const express = require('express');
+const { PDFDocument } = require('pdf-lib');
 const { orcamentoSchema } = require('../schemas');
 const { renderHtmlDocument } = require('../renderer/htmlRenderer');
+const { renderPdfBuffer, RenderTimeoutError } = require('../renderer/pdfRenderer');
 const OrcamentoDoc = require('../templates/orcamento/OrcamentoDoc.jsx');
 
 const router = express.Router();
+
+const RENDER_TIMEOUT_SECONDS = Number(process.env.RENDER_TIMEOUT_SECONDS) || 30;
+const MAX_PAGINAS = Number(process.env.MAX_PAGINAS) || 10;
 
 // Registro por tipo — novo tipo de documento (recibo-sinal, pdf-multa, ...) só precisa de uma
 // entrada nova aqui, sem rota nova (contrato genérico /render/:tipo/:id).
@@ -11,7 +16,7 @@ const TEMPLATES = {
   orcamento: { schema: orcamentoSchema, Component: OrcamentoDoc },
 };
 
-function handleRender(req, res) {
+async function handleRender(req, res) {
   const { tipo, id } = req.params;
   const { format } = req.query;
 
@@ -20,13 +25,7 @@ function handleRender(req, res) {
     return res.status(400).json({ message: `Tipo desconhecido: ${tipo}` });
   }
 
-  if (format === 'pdf') {
-    return res.status(501).json({
-      message: 'format=pdf ainda não implementado nesta rodada — Puppeteer entra no próximo prompt.',
-    });
-  }
-
-  if (format !== 'html') {
+  if (format !== 'html' && format !== 'pdf') {
     return res.status(400).json({ message: `format inválido: ${format}` });
   }
 
@@ -43,8 +42,31 @@ function handleRender(req, res) {
   console.log(`[render] tipo=${tipo} id=${id} format=${format}`);
 
   const html = renderHtmlDocument(template.Component, parsed.data);
-  res.set('Content-Type', 'text/html; charset=utf-8');
-  return res.status(200).send(html);
+
+  if (format === 'html') {
+    res.set('Content-Type', 'text/html; charset=utf-8');
+    return res.status(200).send(html);
+  }
+
+  let pdfBuffer;
+  try {
+    pdfBuffer = await renderPdfBuffer(html, { timeoutSeconds: RENDER_TIMEOUT_SECONDS });
+  } catch (err) {
+    if (err instanceof RenderTimeoutError) {
+      return res.status(408).json({ message: err.message });
+    }
+    throw err;
+  }
+
+  const pdfDoc = await PDFDocument.load(pdfBuffer);
+  if (pdfDoc.getPageCount() > MAX_PAGINAS) {
+    return res.status(413).json({ message: 'Documento muito extenso. Entre em contato com o suporte.' });
+  }
+
+  const filename = `${tipo}-${parsed.data.documento.numeroFormatado}.pdf`;
+  res.set('Content-Type', 'application/pdf');
+  res.set('Content-Disposition', `attachment; filename="${filename}"`);
+  return res.status(200).send(pdfBuffer);
 }
 
 router.get('/:tipo/:id', handleRender);

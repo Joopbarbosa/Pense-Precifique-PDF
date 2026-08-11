@@ -12,6 +12,11 @@ app.get('/health', (req, res) => {
 
 app.use('/render', renderRouter);
 
+app.use((err, req, res, next) => {
+  console.error('[render] falha interna', err);
+  res.status(500).json({ message: 'Falha interna ao gerar o documento.' });
+});
+
 // Guard pra permitir `require('./index')` em teste (supertest) sem abrir uma porta real.
 if (require.main === module) {
   app.listen(PORT, () => console.log(`pense-precifique-pdf rodando na porta ${PORT}`));
