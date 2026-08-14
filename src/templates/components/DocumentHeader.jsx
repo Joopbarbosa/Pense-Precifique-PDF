@@ -1,9 +1,10 @@
 // Sem build/bundler neste serviço (Node puro) — .jsx aqui é só convenção de nome, o conteúdo é
 // JS válido via React.createElement, sem sintaxe JSX literal. Ver ARCHITECTURE.md/decisoes-pdf.md.
 const React = require('react');
+const COLORS = require('../tokens.js');
 
 const styles = {
-  // borda a 25% de opacidade do teal (#2A9D8F) — layout aprovado no Claude Design, ver
+  // borda a 25% de opacidade do teal (COLORS.teal) — layout aprovado no Claude Design, ver
   // contrato-pdf.md.
   header: {
     display: 'flex',
@@ -19,8 +20,8 @@ const styles = {
     width: '56px',
     height: '56px',
     borderRadius: '10px',
-    backgroundColor: '#2A9D8F',
-    color: '#FFFFFF',
+    backgroundColor: COLORS.teal,
+    color: COLORS.white,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -28,10 +29,10 @@ const styles = {
     fontWeight: 'bold',
     flexShrink: 0,
   },
-  nome: { fontSize: '18px', fontWeight: 'bold', margin: 0, color: '#3A372F', letterSpacing: '-0.01em' },
+  nome: { fontSize: '18px', fontWeight: 'bold', margin: 0, color: COLORS.ink, letterSpacing: '-0.01em' },
   contatos: { display: 'flex', flexWrap: 'wrap', gap: '2px 14px', marginTop: '5px' },
-  contato: { display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '9px', color: '#7C786F' },
-  contatoIcone: { color: '#2A9D8F', display: 'flex' },
+  contato: { display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '9px', color: COLORS.textSecondary },
+  contatoIcone: { color: COLORS.teal, display: 'flex' },
   right: { textAlign: 'right', flexShrink: 0 },
 };
 

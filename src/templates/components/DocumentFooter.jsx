@@ -1,22 +1,23 @@
 const React = require('react');
+const COLORS = require('../tokens.js');
 
 const styles = {
   footer: {
     marginTop: '26px',
     paddingTop: '18px',
-    borderTop: '1px solid #F0EEE9',
+    borderTop: `1px solid ${COLORS.borderLight}`,
     fontSize: '9px',
-    color: '#9A968E',
+    color: COLORS.tableLabel,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: '12px',
   },
   esquerda: { display: 'flex', alignItems: 'center', gap: '8px' },
-  icone: { color: '#2A9D8F', display: 'flex' },
-  wordmarkPense: { color: '#2A9D8F', fontWeight: 700 },
-  wordmarkE: { color: '#F97316', fontWeight: 700, margin: '0 1px' },
-  wordmarkPrecifique: { color: '#3A372F', fontWeight: 700 },
+  icone: { color: COLORS.teal, display: 'flex' },
+  wordmarkPense: { color: COLORS.teal, fontWeight: 700 },
+  wordmarkE: { color: COLORS.orange, fontWeight: 700, margin: '0 1px' },
+  wordmarkPrecifique: { color: COLORS.ink, fontWeight: 700 },
 };
 
 function IconeDocumento() {

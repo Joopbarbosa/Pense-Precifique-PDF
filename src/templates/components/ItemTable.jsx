@@ -1,4 +1,5 @@
 const React = require('react');
+const COLORS = require('../tokens.js');
 
 const styles = {
   table: { width: '100%', borderCollapse: 'collapse', margin: '22px 0 8px 0' },
@@ -8,16 +9,16 @@ const styles = {
     fontWeight: 600,
     textTransform: 'uppercase',
     letterSpacing: '0.05em',
-    color: '#9A968E',
+    color: COLORS.tableLabel,
     padding: '0 7px 9px',
-    borderBottom: '1.5px solid #2A9D8F',
+    borderBottom: `1.5px solid ${COLORS.teal}`,
   },
   thNumeric: { textAlign: 'right' },
-  tdBase: { padding: '10px 7px', fontSize: '9.5px', color: '#3A372F', borderBottom: '1px solid #F0EEE9', verticalAlign: 'top' },
+  tdBase: { padding: '10px 7px', fontSize: '9.5px', color: COLORS.ink, borderBottom: `1px solid ${COLORS.borderLight}`, verticalAlign: 'top' },
   tdNumeric: { textAlign: 'right' },
   nomeProduto: { fontWeight: 600 },
-  customizacoes: { color: '#5C594F' },
-  customizacoesVazia: { color: '#C0BCB4' },
+  customizacoes: { color: COLORS.textMuted },
+  customizacoesVazia: { color: COLORS.borderSubtle },
   subtotal: { fontWeight: 600 },
 };
 
