@@ -3,20 +3,21 @@
 const React = require('react');
 
 const styles = {
+  // borda a 25% de opacidade do teal (#2A9D8F) — layout aprovado no Claude Design, ver
+  // contrato-pdf.md.
   header: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     gap: '20px',
-    marginBottom: '22px',
-    borderBottom: '2px solid #2A9D8F',
-    paddingBottom: '16px',
+    paddingBottom: '22px',
+    borderBottom: '2px solid rgba(42,157,143,0.25)',
   },
-  left: { display: 'flex', alignItems: 'flex-start', gap: '14px', flex: 1 },
-  logoImg: { width: '52px', height: '52px', borderRadius: '10px', objectFit: 'cover' },
+  left: { display: 'flex', alignItems: 'center', gap: '14px', flex: 1 },
+  logoImg: { width: '56px', height: '56px', borderRadius: '10px', objectFit: 'cover' },
   logoPlaceholder: {
-    width: '52px',
-    height: '52px',
+    width: '56px',
+    height: '56px',
     borderRadius: '10px',
     backgroundColor: '#2A9D8F',
     color: '#FFFFFF',
@@ -27,10 +28,31 @@ const styles = {
     fontWeight: 'bold',
     flexShrink: 0,
   },
-  nome: { fontSize: '15px', fontWeight: 'bold', margin: '0 0 5px 0', color: '#3A372F' },
-  contato: { fontSize: '9px', color: '#7C786F', margin: '2px 0' },
+  nome: { fontSize: '18px', fontWeight: 'bold', margin: 0, color: '#3A372F', letterSpacing: '-0.01em' },
+  contatos: { display: 'flex', flexWrap: 'wrap', gap: '2px 14px', marginTop: '5px' },
+  contato: { display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '9px', color: '#7C786F' },
+  contatoIcone: { color: '#2A9D8F', display: 'flex' },
   right: { textAlign: 'right', flexShrink: 0 },
 };
+
+function IconeEmail() {
+  return React.createElement(
+    'svg',
+    { viewBox: '0 0 24 24', width: '11', height: '11', fill: 'none', stroke: 'currentColor', strokeWidth: 1.7, strokeLinecap: 'round', strokeLinejoin: 'round' },
+    React.createElement('rect', { x: '3', y: '5', width: '18', height: '14', rx: '2.5' }),
+    React.createElement('path', { d: 'm4 7 8 5.5L20 7' }),
+  );
+}
+
+function IconeTelefone() {
+  return React.createElement(
+    'svg',
+    { viewBox: '0 0 24 24', width: '11', height: '11', fill: 'none', stroke: 'currentColor', strokeWidth: 1.7, strokeLinecap: 'round', strokeLinejoin: 'round' },
+    React.createElement('path', {
+      d: 'M6.5 4.5h3l1.2 3.2-1.7 1.3a11 11 0 0 0 4.7 4.7l1.3-1.7 3.2 1.2v3a1.5 1.5 0 0 1-1.6 1.5A14.5 14.5 0 0 1 5 6.1 1.5 1.5 0 0 1 6.5 4.5Z',
+    }),
+  );
+}
 
 function inicialDaEmpresa(nome) {
   if (!nome) {
@@ -57,11 +79,27 @@ function DocumentHeader({ empresa, children }) {
         'div',
         null,
         React.createElement('h3', { style: styles.nome }, empresa.nome),
-        empresa.email
-          ? React.createElement('p', { style: styles.contato }, '✉ ' + empresa.email)
-          : null,
-        empresa.whatsapp
-          ? React.createElement('p', { style: styles.contato }, '☎ ' + empresa.whatsapp)
+        (empresa.email || empresa.whatsapp)
+          ? React.createElement(
+              'div',
+              { style: styles.contatos },
+              empresa.email
+                ? React.createElement(
+                    'span',
+                    { style: styles.contato },
+                    React.createElement('span', { style: styles.contatoIcone }, React.createElement(IconeEmail)),
+                    empresa.email,
+                  )
+                : null,
+              empresa.whatsapp
+                ? React.createElement(
+                    'span',
+                    { style: styles.contato },
+                    React.createElement('span', { style: styles.contatoIcone }, React.createElement(IconeTelefone)),
+                    empresa.whatsapp,
+                  )
+                : null,
+            )
           : null,
       ),
     ),

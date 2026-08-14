@@ -2,12 +2,19 @@ const React = require('react');
 
 const styles = {
   table: { width: '100%', borderCollapse: 'collapse', margin: '22px 0 8px 0' },
-  theadRow: { backgroundColor: '#2A9D8F' },
-  th: { color: '#FFFFFF', fontWeight: 'bold', fontSize: '8.5px', padding: '7px', textAlign: 'left' },
+  th: {
+    textAlign: 'left',
+    fontSize: '8.5px',
+    fontWeight: 600,
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    color: '#9A968E',
+    padding: '0 7px 9px',
+    borderBottom: '1.5px solid #2A9D8F',
+  },
   thNumeric: { textAlign: 'right' },
-  tdBase: { padding: '6px 7px', fontSize: '9px', color: '#3A372F' },
+  tdBase: { padding: '10px 7px', fontSize: '9.5px', color: '#3A372F', borderBottom: '1px solid #F0EEE9', verticalAlign: 'top' },
   tdNumeric: { textAlign: 'right' },
-  rowEven: { backgroundColor: '#FBFAF8' },
   nomeProduto: { fontWeight: 600 },
   customizacoes: { color: '#5C594F' },
   customizacoesVazia: { color: '#C0BCB4' },
@@ -23,7 +30,7 @@ function ItemTable({ itens }) {
       null,
       React.createElement(
         'tr',
-        { style: styles.theadRow },
+        null,
         React.createElement('th', { style: styles.th }, 'Produto'),
         React.createElement('th', { style: styles.th }, 'Customizações'),
         React.createElement('th', { style: { ...styles.th, ...styles.thNumeric } }, 'Qtd'),
@@ -37,7 +44,7 @@ function ItemTable({ itens }) {
       itens.map((item, index) =>
         React.createElement(
           'tr',
-          { key: index, style: index % 2 === 1 ? styles.rowEven : undefined },
+          { key: index },
           React.createElement('td', { style: { ...styles.tdBase, ...styles.nomeProduto } }, item.nomeProduto),
           React.createElement(
             'td',

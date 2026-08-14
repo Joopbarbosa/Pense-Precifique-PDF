@@ -43,6 +43,15 @@ const documentoOrcamentoSchema = z.object({
   // null). Ver DECISOES_V0.8.md.
   observacoes: z.string().nullable(),
   itens: z.array(itemPdfSchema),
+  // Campos novos do layout aprovado no Claude Design (regressão #89) — `PdfMapper.java` ainda não
+  // os popula, por isso `.optional()` além de `.nullable()`: payload atual do backend (sem essas
+  // chaves) continua válido até a Retomada que atualizar o mapper. Ver pendência em
+  // contrato-pdf.md. Quando ausentes, o componente renderiza sem a informação (sem inventar
+  // dado/cálculo — contrato do microsserviço não formata nem calcula nada, só o que recebe).
+  telefoneCliente: z.string().nullable().optional(),
+  emailCliente: z.string().nullable().optional(),
+  percentualDesconto: z.string().nullable().optional(),
+  percentualSinal: z.string().nullable().optional(),
 });
 
 const orcamentoSchema = z.object({
