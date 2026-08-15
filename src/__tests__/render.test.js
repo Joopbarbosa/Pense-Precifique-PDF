@@ -83,10 +83,130 @@ describe('GET /render/orcamento/:id?format=html', () => {
 
   test('tipo desconhecido retorna 400', async () => {
     const res = await request(app)
-      .get('/render/pdf-multa/e5f5c3a0-0000-0000-0000-000000000005?format=html')
+      .get('/render/tipo-invalido/e5f5c3a0-0000-0000-0000-000000000005?format=html')
       .send(payloadValido);
 
     expect(res.status).toBe(400);
+  });
+});
+
+const payloadReciboSinalValido = {
+  empresa: { nome: 'Studio da Ana', email: 'ana@studio.com', whatsapp: '(11) 99999-1234', logoUrl: null },
+  documento: {
+    numeroFormatado: '47',
+    nomeCliente: 'Mariana Costa',
+    metodoRecebido: 'Pix',
+    valorRecebido: 'R$ 150,00',
+    dataAprovacao: '01/01/2026',
+    prazoProducao: '15 dias úteis',
+    inicioProducao: 'Assim que aprovado',
+  },
+};
+
+describe('GET /render/recibo-sinal/:id?format=html', () => {
+  test('payload de exemplo retorna 200 e HTML com os dados reais', async () => {
+    const res = await request(app)
+      .get('/render/recibo-sinal/e5f5c3a0-0000-0000-0000-000000000020?format=html')
+      .send(payloadReciboSinalValido);
+
+    expect(res.status).toBe(200);
+    expect(res.headers['content-type']).toContain('text/html');
+    expect(res.text).toContain('Mariana Costa');
+    expect(res.text).toContain('R$ 150,00');
+  });
+
+  test('payload incompleto retorna 400 com detalhe do campo', async () => {
+    const payload = JSON.parse(JSON.stringify(payloadReciboSinalValido));
+    delete payload.documento.metodoRecebido;
+
+    const res = await request(app)
+      .get('/render/recibo-sinal/e5f5c3a0-0000-0000-0000-000000000021?format=html')
+      .send(payload);
+
+    expect(res.status).toBe(400);
+    expect(res.body.detalhes.some((d) => d.campo === 'documento.metodoRecebido')).toBe(true);
+  });
+});
+
+const payloadPdfMultaValido = {
+  empresa: { nome: 'Studio da Ana', email: 'ana@studio.com', whatsapp: '(11) 99999-1234', logoUrl: null },
+  documento: {
+    numeroFormatado: '47',
+    nomeCliente: 'Mariana Costa',
+    motivo: 'Cliente desistiu da encomenda',
+    percentualMulta: '10%',
+    valorMulta: 'R$ 30,00',
+    dataAprovacao: '01/01/2026',
+    prazoProducao: '15 dias úteis',
+    inicioProducao: 'Assim que aprovado',
+  },
+};
+
+describe('GET /render/pdf-multa/:id?format=html', () => {
+  test('payload de exemplo retorna 200 e HTML com os dados reais', async () => {
+    const res = await request(app)
+      .get('/render/pdf-multa/e5f5c3a0-0000-0000-0000-000000000022?format=html')
+      .send(payloadPdfMultaValido);
+
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('Cliente desistiu da encomenda');
+    expect(res.text).toContain('R$ 30,00');
+  });
+
+  test('motivo=null não quebra a renderização', async () => {
+    const payload = { ...payloadPdfMultaValido, documento: { ...payloadPdfMultaValido.documento, motivo: null } };
+
+    const res = await request(app)
+      .get('/render/pdf-multa/e5f5c3a0-0000-0000-0000-000000000023?format=html')
+      .send(payload);
+
+    expect(res.status).toBe(200);
+  });
+
+  test('campo obrigatório faltando retorna 400', async () => {
+    const payload = JSON.parse(JSON.stringify(payloadPdfMultaValido));
+    delete payload.documento.valorMulta;
+
+    const res = await request(app)
+      .get('/render/pdf-multa/e5f5c3a0-0000-0000-0000-000000000024?format=html')
+      .send(payload);
+
+    expect(res.status).toBe(400);
+    expect(res.body.detalhes.some((d) => d.campo === 'documento.valorMulta')).toBe(true);
+  });
+});
+
+const payloadReciboEstornoValido = {
+  empresa: { nome: 'Studio da Ana', email: 'ana@studio.com', whatsapp: '(11) 99999-1234', logoUrl: null },
+  documento: {
+    numeroFormatado: '47',
+    nomeCliente: 'Mariana Costa',
+    valorRecebido: 'R$ 150,00',
+    dataEstorno: '05/01/2026',
+  },
+};
+
+describe('GET /render/recibo-estorno/:id?format=html', () => {
+  test('payload de exemplo retorna 200 e HTML com os dados reais', async () => {
+    const res = await request(app)
+      .get('/render/recibo-estorno/e5f5c3a0-0000-0000-0000-000000000025?format=html')
+      .send(payloadReciboEstornoValido);
+
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('Mariana Costa');
+    expect(res.text).toContain('05/01/2026');
+  });
+
+  test('campo obrigatório faltando retorna 400', async () => {
+    const payload = JSON.parse(JSON.stringify(payloadReciboEstornoValido));
+    delete payload.documento.dataEstorno;
+
+    const res = await request(app)
+      .get('/render/recibo-estorno/e5f5c3a0-0000-0000-0000-000000000026?format=html')
+      .send(payload);
+
+    expect(res.status).toBe(400);
+    expect(res.body.detalhes.some((d) => d.campo === 'documento.dataEstorno')).toBe(true);
   });
 });
 

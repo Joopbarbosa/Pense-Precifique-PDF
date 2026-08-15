@@ -59,4 +59,53 @@ const orcamentoSchema = z.object({
   documento: documentoOrcamentoSchema,
 });
 
-module.exports = { orcamentoSchema };
+// Os 3 schemas abaixo (#248) migram recibo-sinal/pdf-multa/recibo-estorno do fluxo Thymeleaf
+// local do backend para este microsserviço. Campos sem `.nullable()` correspondem a valores que
+// o PdfMapper.java sempre resolve com fallback "—" antes de enviar (nunca null); `motivo` é
+// exceção — o mapper não aplica fallback nesse campo (`orc.getCancelamentoMotivo()` direto), por
+// isso fica nullable aqui também.
+
+const documentoReciboSinalSchema = z.object({
+  numeroFormatado: z.string(),
+  nomeCliente: z.string(),
+  metodoRecebido: z.string(),
+  valorRecebido: z.string(),
+  dataAprovacao: z.string(),
+  prazoProducao: z.string(),
+  inicioProducao: z.string(),
+});
+
+const reciboSinalSchema = z.object({
+  empresa: empresaSchema,
+  documento: documentoReciboSinalSchema,
+});
+
+const documentoPdfMultaSchema = z.object({
+  numeroFormatado: z.string(),
+  nomeCliente: z.string(),
+  motivo: z.string().nullable(),
+  percentualMulta: z.string(),
+  valorMulta: z.string(),
+  dataAprovacao: z.string(),
+  prazoProducao: z.string(),
+  inicioProducao: z.string(),
+});
+
+const pdfMultaSchema = z.object({
+  empresa: empresaSchema,
+  documento: documentoPdfMultaSchema,
+});
+
+const documentoReciboEstornoSchema = z.object({
+  numeroFormatado: z.string(),
+  nomeCliente: z.string(),
+  valorRecebido: z.string(),
+  dataEstorno: z.string(),
+});
+
+const reciboEstornoSchema = z.object({
+  empresa: empresaSchema,
+  documento: documentoReciboEstornoSchema,
+});
+
+module.exports = { orcamentoSchema, reciboSinalSchema, pdfMultaSchema, reciboEstornoSchema };

@@ -1,9 +1,12 @@
 const express = require('express');
 const { PDFDocument } = require('pdf-lib');
-const { orcamentoSchema } = require('../schemas');
+const { orcamentoSchema, reciboSinalSchema, pdfMultaSchema, reciboEstornoSchema } = require('../schemas');
 const { renderHtmlDocument } = require('../renderer/htmlRenderer');
 const { renderPdfBuffer, RenderTimeoutError } = require('../renderer/pdfRenderer');
 const OrcamentoDoc = require('../templates/orcamento/OrcamentoDoc.jsx');
+const ReciboSinalDoc = require('../templates/recibo-sinal/ReciboSinalDoc.jsx');
+const MultaDoc = require('../templates/pdf-multa/MultaDoc.jsx');
+const ReciboEstornoDoc = require('../templates/recibo-estorno/ReciboEstornoDoc.jsx');
 
 const router = express.Router();
 
@@ -14,6 +17,9 @@ const MAX_PAGINAS = Number(process.env.MAX_PAGINAS) || 10;
 // entrada nova aqui, sem rota nova (contrato genérico /render/:tipo/:id).
 const TEMPLATES = {
   orcamento: { schema: orcamentoSchema, Component: OrcamentoDoc },
+  'recibo-sinal': { schema: reciboSinalSchema, Component: ReciboSinalDoc },
+  'pdf-multa': { schema: pdfMultaSchema, Component: MultaDoc },
+  'recibo-estorno': { schema: reciboEstornoSchema, Component: ReciboEstornoDoc },
 };
 
 async function handleRender(req, res) {
