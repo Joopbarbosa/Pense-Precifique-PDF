@@ -51,6 +51,23 @@ implementar, nunca corrigida silenciosamente sem avisar.
 - **Sem autenticação própria (JWT)** — este serviço confia 100% em quem chama (backend/frontend
   já validaram o token). Roda em rede Docker interna, nunca exposto à internet. Não adicionar
   validação de JWT aqui sem antes revisar essa decisão no `ARCHITECTURE.md`.
+- **Layout do documento de Orçamento** — segue a referência visual oficial do Claude Design (ver
+  `contrato-pdf.md`, seção 2.1, `docs-pense-precifique`). Qualquer mudança de layout deve ser
+  cotejada contra essa referência antes de implementar, não decidida ad-hoc.
+
+---
+
+## 4.1 Débito conhecido (gatilho, não corrigir sem necessidade)
+
+- **Cores hardcoded, sem arquivo de tokens** — `OrcamentoDoc.jsx`, `DocumentHeader.jsx`,
+  `ItemTable.jsx`, `DocumentFooter.jsx` repetem ~13 valores hex literais (`#2A9D8F`, `#3A372F`,
+  `#F97316`, etc.) em vez de importar de uma fonte única. Achado na Retomada V0.8 (2026-08-14) —
+  não corrigido nesta rodada por decisão explícita do usuário (código recém-aprovado
+  visualmente e já commitado/pushado; risco de regressão visual não justificado fora de uma
+  rodada dedicada). **Gatilho:** extrair para `src/templates/tokens.js` na próxima vez que um
+  novo tipo de documento (recibo-sinal, recibo-pagamento, pdf-multa, recibo-estorno) for
+  implementado e for reaproveitar essas cores — nesse ponto a duplicação deixa de ser
+  hipotética. Validar visualmente (regenerar PDF de teste, comparar) após a extração.
 
 ---
 
