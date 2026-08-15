@@ -1,4 +1,10 @@
-const { orcamentoSchema, reciboSinalSchema, pdfMultaSchema, reciboEstornoSchema } = require('../schemas');
+const {
+  orcamentoSchema,
+  reciboSinalSchema,
+  pdfMultaSchema,
+  reciboEstornoSchema,
+  reciboPagamentoSchema,
+} = require('../schemas');
 
 const payloadValido = {
   empresa: { nome: 'Studio da Ana', email: 'ana@studio.com', whatsapp: '(11) 99999-1234', logoUrl: null },
@@ -143,5 +149,34 @@ describe('reciboEstornoSchema', () => {
     const payload = JSON.parse(JSON.stringify(payloadValidoReciboEstorno));
     delete payload.documento.dataEstorno;
     expect(reciboEstornoSchema.safeParse(payload).success).toBe(false);
+  });
+});
+
+describe('reciboPagamentoSchema', () => {
+  const payloadValidoReciboPagamento = {
+    empresa: { nome: 'Studio da Ana', email: 'ana@studio.com', whatsapp: '(11) 99999-1234', logoUrl: null },
+    documento: {
+      numeroFormatado: '47',
+      nomeCliente: 'Mariana Costa',
+      metodoPagamento: 'Pix',
+      valorTotal: 'R$ 1.000,00',
+      valorSinalPago: 'R$ 200,00',
+      valorRestantePago: 'R$ 800,00',
+      totalQuitado: 'R$ 1.000,00',
+      dataAprovacao: '01/01/2026',
+      prazoProducao: '15 dias úteis',
+      inicioProducao: 'Assim que aprovado',
+      dataPagamento: '01/03/2026',
+    },
+  };
+
+  test('payload válido passa a validação', () => {
+    expect(reciboPagamentoSchema.safeParse(payloadValidoReciboPagamento).success).toBe(true);
+  });
+
+  test('campo obrigatório faltando é rejeitado', () => {
+    const payload = JSON.parse(JSON.stringify(payloadValidoReciboPagamento));
+    delete payload.documento.totalQuitado;
+    expect(reciboPagamentoSchema.safeParse(payload).success).toBe(false);
   });
 });

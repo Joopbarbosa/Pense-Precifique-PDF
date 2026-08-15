@@ -210,5 +210,47 @@ describe('GET /render/recibo-estorno/:id?format=html', () => {
   });
 });
 
+const payloadReciboPagamentoValido = {
+  empresa: { nome: 'Studio da Ana', email: 'ana@studio.com', whatsapp: '(11) 99999-1234', logoUrl: null },
+  documento: {
+    numeroFormatado: '47',
+    nomeCliente: 'Mariana Costa',
+    metodoPagamento: 'Pix',
+    valorTotal: 'R$ 1.000,00',
+    valorSinalPago: 'R$ 200,00',
+    valorRestantePago: 'R$ 800,00',
+    totalQuitado: 'R$ 1.000,00',
+    dataAprovacao: '01/01/2026',
+    prazoProducao: '15 dias úteis',
+    inicioProducao: 'Assim que aprovado',
+    dataPagamento: '01/03/2026',
+  },
+};
+
+describe('GET /render/recibo-pagamento/:id?format=html', () => {
+  test('payload de exemplo retorna 200 e HTML com os dados reais', async () => {
+    const res = await request(app)
+      .get('/render/recibo-pagamento/e5f5c3a0-0000-0000-0000-000000000027?format=html')
+      .send(payloadReciboPagamentoValido);
+
+    expect(res.status).toBe(200);
+    expect(res.headers['content-type']).toContain('text/html');
+    expect(res.text).toContain('Mariana Costa');
+    expect(res.text).toContain('R$ 1.000,00');
+  });
+
+  test('campo obrigatório faltando retorna 400 com detalhe do campo', async () => {
+    const payload = JSON.parse(JSON.stringify(payloadReciboPagamentoValido));
+    delete payload.documento.totalQuitado;
+
+    const res = await request(app)
+      .get('/render/recibo-pagamento/e5f5c3a0-0000-0000-0000-000000000028?format=html')
+      .send(payload);
+
+    expect(res.status).toBe(400);
+    expect(res.body.detalhes.some((d) => d.campo === 'documento.totalQuitado')).toBe(true);
+  });
+});
+
 // Testes de format=pdf ficam em render.pdf.test.js — precisam mockar `puppeteer-core` e setar
 // RENDER_TIMEOUT_SECONDS baixo antes do require de `../index`, o que exige módulo isolado.

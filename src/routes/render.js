@@ -1,12 +1,19 @@
 const express = require('express');
 const { PDFDocument } = require('pdf-lib');
-const { orcamentoSchema, reciboSinalSchema, pdfMultaSchema, reciboEstornoSchema } = require('../schemas');
+const {
+  orcamentoSchema,
+  reciboSinalSchema,
+  pdfMultaSchema,
+  reciboEstornoSchema,
+  reciboPagamentoSchema,
+} = require('../schemas');
 const { renderHtmlDocument } = require('../renderer/htmlRenderer');
 const { renderPdfBuffer, RenderTimeoutError } = require('../renderer/pdfRenderer');
 const OrcamentoDoc = require('../templates/orcamento/OrcamentoDoc.jsx');
 const ReciboSinalDoc = require('../templates/recibo-sinal/ReciboSinalDoc.jsx');
 const MultaDoc = require('../templates/pdf-multa/MultaDoc.jsx');
 const ReciboEstornoDoc = require('../templates/recibo-estorno/ReciboEstornoDoc.jsx');
+const ReciboPagamentoDoc = require('../templates/recibo-pagamento/ReciboPagamentoDoc.jsx');
 
 const router = express.Router();
 
@@ -20,6 +27,7 @@ const TEMPLATES = {
   'recibo-sinal': { schema: reciboSinalSchema, Component: ReciboSinalDoc },
   'pdf-multa': { schema: pdfMultaSchema, Component: MultaDoc },
   'recibo-estorno': { schema: reciboEstornoSchema, Component: ReciboEstornoDoc },
+  'recibo-pagamento': { schema: reciboPagamentoSchema, Component: ReciboPagamentoDoc },
 };
 
 async function handleRender(req, res) {

@@ -108,4 +108,29 @@ const reciboEstornoSchema = z.object({
   documento: documentoReciboEstornoSchema,
 });
 
-module.exports = { orcamentoSchema, reciboSinalSchema, pdfMultaSchema, reciboEstornoSchema };
+const documentoReciboPagamentoSchema = z.object({
+  numeroFormatado: z.string(),
+  nomeCliente: z.string(),
+  metodoPagamento: z.string(),
+  valorTotal: z.string(),
+  valorSinalPago: z.string(),
+  valorRestantePago: z.string(),
+  totalQuitado: z.string(),
+  dataAprovacao: z.string(),
+  prazoProducao: z.string(),
+  inicioProducao: z.string(),
+  dataPagamento: z.string(),
+});
+
+const reciboPagamentoSchema = z.object({
+  empresa: empresaSchema,
+  documento: documentoReciboPagamentoSchema,
+});
+
+module.exports = {
+  orcamentoSchema,
+  reciboSinalSchema,
+  pdfMultaSchema,
+  reciboEstornoSchema,
+  reciboPagamentoSchema,
+};
