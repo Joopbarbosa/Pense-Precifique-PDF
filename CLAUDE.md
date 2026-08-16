@@ -57,17 +57,15 @@ implementar, nunca corrigida silenciosamente sem avisar.
 
 ---
 
-## 4.1 Débito conhecido (gatilho, não corrigir sem necessidade)
+## 4.1 Tokens de cor (extraído — débito resolvido)
 
-- **Cores hardcoded, sem arquivo de tokens** — `OrcamentoDoc.jsx`, `DocumentHeader.jsx`,
-  `ItemTable.jsx`, `DocumentFooter.jsx` repetem ~13 valores hex literais (`#2A9D8F`, `#3A372F`,
-  `#F97316`, etc.) em vez de importar de uma fonte única. Achado na Retomada V0.8 (2026-08-14) —
-  não corrigido nesta rodada por decisão explícita do usuário (código recém-aprovado
-  visualmente e já commitado/pushado; risco de regressão visual não justificado fora de uma
-  rodada dedicada). **Gatilho:** extrair para `src/templates/tokens.js` na próxima vez que um
-  novo tipo de documento (recibo-sinal, recibo-pagamento, pdf-multa, recibo-estorno) for
-  implementado e for reaproveitar essas cores — nesse ponto a duplicação deixa de ser
-  hipotética. Validar visualmente (regenerar PDF de teste, comparar) após a extração.
+- **`src/templates/tokens.js`** centraliza os valores hex antes hardcoded (`#2A9D8F`, `#3A372F`,
+  `#F97316`, etc.) — extraído no commit `6e3ec8b`, gatilho atingido na Epic #248 (novos tipos de
+  documento reaproveitando as cores do template de Orçamento). Reaproveitado hoje pelos 4
+  componentes compartilhados (`DocumentHeader.jsx`, `ItemTable.jsx`, `DocumentFooter.jsx`) e pelos
+  5 templates de documento (`OrcamentoDoc.jsx`, `ReciboSinalDoc.jsx`, `MultaDoc.jsx`,
+  `ReciboEstornoDoc.jsx`, `ReciboPagamentoDoc.jsx`). Não há mais duplicação de cor hardcoded a
+  corrigir — qualquer cor nova do design system entra em `tokens.js`, não direto no componente.
 
 ---
 
