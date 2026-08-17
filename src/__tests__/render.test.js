@@ -100,6 +100,18 @@ const payloadReciboSinalValido = {
     dataAprovacao: '01/01/2026',
     prazoProducao: '15 dias úteis',
     inicioProducao: 'Assim que aprovado',
+    itens: [
+      {
+        nomeProduto: 'Bolo Vulcão de Chocolate',
+        customizacoes: 'Sem glúten, Cobertura extra',
+        quantidade: '2',
+        precoUnitario: 'R$ 150,00',
+        subtotal: 'R$ 300,00',
+      },
+    ],
+    valorTotalPedido: 'R$ 300,00',
+    percentualSinal: '50%',
+    restante: 'R$ 150,00',
   },
 };
 

@@ -73,6 +73,14 @@ const documentoReciboSinalSchema = z.object({
   dataAprovacao: z.string(),
   prazoProducao: z.string(),
   inicioProducao: z.string(),
+  // P-F007b — restaura "Detalhes do pedido"/"Próximos passos" do mock ("Recibo do Sinal -
+  // standalone"), cortadas na migração #248 por o schema original não ter itens/totais.
+  // `itemPdfSchema` reaproveitado tal qual (precoUnitario/subtotal chegam preenchidos mas não são
+  // exibidos nesta tabela de 3 colunas — mesma origem de dado do Orçamento, sem schema paralelo).
+  itens: z.array(itemPdfSchema),
+  valorTotalPedido: z.string(),
+  percentualSinal: z.string(),
+  restante: z.string(),
 });
 
 const reciboSinalSchema = z.object({
