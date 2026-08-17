@@ -12,9 +12,14 @@ const COLORS = require('../tokens.js');
 // com preço unitário/total) — o mock só mostra Item/Customização/Qtd, por isso é uma tabela local
 // própria, mesmo padrão de estilo (COLORS.tableLabel/borderLight).
 //
-// Tamanhos de fonte escalados proporcionalmente por ~13/11 (base do corpo 11px→13px, P-F007b) a
-// partir do valor de cada elemento — preserva a hierarquia label/valor/heading do layout aprovado
-// em vez de igualar tudo a um único tamanho.
+// Tamanhos de fonte escalados proporcionalmente — base do corpo 11px→13px (P-F007b). P-F007c pediu
+// +35% sobre 13px (≈18px), mas isso quebrava 1 página mesmo no caso mais simples (1 item) — e a
+// 16.5px (+27%) já quebrava com um pedido real de 2 itens (dados de #18). O valor final, 15px
+// (+15% sobre P-F007b), é o maior que ainda cabe em 1 página testado contra pedidos de 1-2 itens
+// (dados reais); pedidos de 3+ itens com texto longo já não cabiam em 1 página nem no baseline de
+// 13px (achado, não regressão desta mudança — ver DECISOES_V0.8.1.md, P-F007c). Cada tamanho é
+// escalado a partir do valor atual do elemento (fator ~15/13), não igualado a um único valor —
+// preserva a hierarquia label/valor/heading do layout aprovado.
 const styles = {
   page: {
     width: '210mm',
@@ -22,18 +27,18 @@ const styles = {
     boxSizing: 'border-box',
     padding: '40px',
     fontFamily: 'Helvetica, Arial, sans-serif',
-    fontSize: '13px',
+    fontSize: '15px',
     color: COLORS.ink,
     lineHeight: 1.4,
   },
   headerRightLabel: {
-    fontSize: '13px',
+    fontSize: '15px',
     fontWeight: 600,
     color: COLORS.teal,
     textTransform: 'uppercase',
     letterSpacing: '0.08em',
   },
-  headerRightNumero: { fontSize: '28px', fontWeight: 'bold', color: COLORS.ink, letterSpacing: '-0.02em', marginTop: '2px' },
+  headerRightNumero: { fontSize: '32.5px', fontWeight: 'bold', color: COLORS.ink, letterSpacing: '-0.02em', marginTop: '2px' },
   tituloCard: {
     marginTop: '22px',
     padding: '16px 18px',
@@ -57,18 +62,18 @@ const styles = {
     border: '1px solid rgba(42,157,143,0.25)',
     color: COLORS.teal,
   },
-  tituloHeading: { fontSize: '15.5px', fontWeight: 'bold', color: COLORS.teal, letterSpacing: '-0.005em' },
-  tituloSub: { fontSize: '10px', color: '#4A6B62', marginTop: '3px' },
+  tituloHeading: { fontSize: '18px', fontWeight: 'bold', color: COLORS.teal, letterSpacing: '-0.005em' },
+  tituloSub: { fontSize: '11.5px', color: '#4A6B62', marginTop: '3px' },
   clienteSection: { padding: '18px 0 0' },
   clienteLabel: {
-    fontSize: '9px',
+    fontSize: '10.5px',
     fontWeight: 600,
     color: COLORS.labelMuted,
     textTransform: 'uppercase',
     letterSpacing: '0.06em',
     marginBottom: '5px',
   },
-  clienteNome: { fontSize: '13.5px', fontWeight: 'bold', color: COLORS.ink },
+  clienteNome: { fontSize: '15.5px', fontWeight: 'bold', color: COLORS.ink },
   destaqueCard: {
     marginTop: '18px',
     borderRadius: '11px',
@@ -95,24 +100,24 @@ const styles = {
     backgroundColor: COLORS.white,
     color: COLORS.teal,
   },
-  destaqueHeaderTexto: { fontSize: '12.5px', fontWeight: 'bold', color: COLORS.teal },
+  destaqueHeaderTexto: { fontSize: '14.5px', fontWeight: 'bold', color: COLORS.teal },
   destaqueBody: { display: 'flex', flexWrap: 'wrap', gap: '16px', padding: '15px' },
   valorLabel: {
-    fontSize: '9px',
+    fontSize: '10.5px',
     fontWeight: 600,
     color: COLORS.teal,
     textTransform: 'uppercase',
     letterSpacing: '0.05em',
   },
-  valorAmount: { fontSize: '26px', fontWeight: 'bold', color: COLORS.teal, marginTop: '3px', letterSpacing: '-0.01em' },
+  valorAmount: { fontSize: '30px', fontWeight: 'bold', color: COLORS.teal, marginTop: '3px', letterSpacing: '-0.01em' },
   destaqueMetaLabel: {
-    fontSize: '8.5px',
+    fontSize: '10px',
     fontWeight: 600,
     color: COLORS.labelMuted,
     textTransform: 'uppercase',
     letterSpacing: '0.05em',
   },
-  destaqueMetaValue: { fontSize: '11px', fontWeight: 600, color: COLORS.ink, marginTop: '2px' },
+  destaqueMetaValue: { fontSize: '12.5px', fontWeight: 600, color: COLORS.ink, marginTop: '2px' },
   datasGrid: {
     display: 'grid',
     gridTemplateColumns: '1fr 1fr 1fr',
@@ -122,15 +127,15 @@ const styles = {
     borderTop: `1px solid ${COLORS.borderLight}`,
   },
   metaLabel: {
-    fontSize: '9px',
+    fontSize: '10.5px',
     fontWeight: 600,
     color: COLORS.labelMuted,
     textTransform: 'uppercase',
     letterSpacing: '0.05em',
     marginBottom: '6px',
   },
-  metaValue: { fontSize: '12px', fontWeight: 600, color: COLORS.ink, margin: '4px 0' },
-  metaValueDestaque: { fontSize: '12px', fontWeight: 600, color: COLORS.teal, margin: '4px 0' },
+  metaValue: { fontSize: '14px', fontWeight: 600, color: COLORS.ink, margin: '4px 0' },
+  metaValueDestaque: { fontSize: '14px', fontWeight: 600, color: COLORS.teal, margin: '4px 0' },
 
   secaoTituloRow: { display: 'flex', alignItems: 'center', gap: '10px' },
   secaoTituloChip: {
@@ -144,13 +149,13 @@ const styles = {
     backgroundColor: 'rgba(42,157,143,0.1)',
     color: COLORS.teal,
   },
-  secaoTituloTexto: { fontSize: '14.5px', fontWeight: 'bold', color: COLORS.ink, letterSpacing: '-0.005em' },
+  secaoTituloTexto: { fontSize: '16.5px', fontWeight: 'bold', color: COLORS.ink, letterSpacing: '-0.005em' },
 
   pedidoSection: { marginTop: '26px' },
   pedidoTable: { width: '100%', borderCollapse: 'collapse', marginTop: '14px' },
   pedidoTh: {
     textAlign: 'left',
-    fontSize: '9px',
+    fontSize: '10.5px',
     fontWeight: 600,
     textTransform: 'uppercase',
     letterSpacing: '0.05em',
@@ -159,20 +164,24 @@ const styles = {
     borderBottom: `1.5px solid ${COLORS.teal}`,
   },
   pedidoThNum: { textAlign: 'right' },
-  pedidoTd: { padding: '10px 8px', fontSize: '11px', color: COLORS.ink, borderBottom: `1px solid ${COLORS.borderLight}`, verticalAlign: 'top' },
+  pedidoTd: { padding: '10px 8px', fontSize: '12.5px', color: COLORS.ink, borderBottom: `1px solid ${COLORS.borderLight}`, verticalAlign: 'top' },
   pedidoTdNum: { textAlign: 'right', fontWeight: 600 },
   pedidoNomeItem: { fontWeight: 600 },
   pedidoCustom: { color: COLORS.textMuted },
   pedidoCustomVazia: { color: COLORS.borderSubtle },
 
   resumoWrap: { display: 'flex', justifyContent: 'flex-end', marginTop: '18px' },
-  resumoBox: { width: '300px', maxWidth: '100%' },
-  resumoRow: { display: 'flex', justifyContent: 'space-between', fontSize: '10.5px', color: COLORS.textMuted, padding: '7px 10px' },
+  // largura ampliada de 300px→360px (P-F007c) — companion fix: no fontSize anterior (10.5-15px)
+  // "Entrada paga (XX%)"/"Restante a pagar na entrega" cabiam numa linha só a 300px; no fontSize
+  // novo (12-17.5px) quebrariam texto/valor em 2 linhas dentro da caixa. Página tem ~714px úteis
+  // (210mm - 80px de padding), 360px continua confortável alinhado à direita.
+  resumoBox: { width: '360px', maxWidth: '100%' },
+  resumoRow: { display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: COLORS.textMuted, padding: '7px 10px' },
   resumoRowEntrada: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    fontSize: '10.5px',
+    fontSize: '12px',
     color: COLORS.textMuted,
     padding: '8px 10px',
     borderRadius: '8px',
@@ -192,8 +201,8 @@ const styles = {
     backgroundColor: COLORS.orangeLight,
     border: '1px solid rgba(249,115,22,0.28)',
   },
-  resumoRowRestanteLabel: { fontSize: '10.5px', fontWeight: 600, color: COLORS.ink },
-  resumoRowRestanteValor: { fontSize: '15px', fontWeight: 'bold', color: COLORS.orange, letterSpacing: '-0.01em' },
+  resumoRowRestanteLabel: { fontSize: '12px', fontWeight: 600, color: COLORS.ink },
+  resumoRowRestanteValor: { fontSize: '17.5px', fontWeight: 'bold', color: COLORS.orange, letterSpacing: '-0.01em' },
 
   passosSection: { marginTop: '26px' },
   passosBox: {
@@ -203,7 +212,7 @@ const styles = {
     backgroundColor: 'rgba(42,157,143,0.05)',
     border: '1px solid rgba(42,157,143,0.2)',
   },
-  passosTexto: { margin: 0, fontSize: '11.5px', color: COLORS.ink, lineHeight: 1.65 },
+  passosTexto: { margin: 0, fontSize: '13.5px', color: COLORS.ink, lineHeight: 1.65 },
   passosDestaque: { fontWeight: 'bold', color: COLORS.teal },
   passosRestante: { fontWeight: 'bold', color: COLORS.orange },
   passosPrazo: { fontWeight: 'bold', color: COLORS.textMuted },
