@@ -2,12 +2,21 @@ const React = require('react');
 const DocumentHeader = require('../components/DocumentHeader.jsx');
 const DocumentFooter = require('../components/DocumentFooter.jsx');
 const ItemTable = require('../components/ItemTable.jsx');
+const SecaoTitulo = require('../components/SecaoTitulo.jsx');
+const SecaoDatasCliente = require('../components/SecaoDatasCliente.jsx');
+const SecaoStatus = require('../components/SecaoStatus.jsx');
+const SecaoCalculadora = require('../components/SecaoCalculadora.jsx');
+const SecaoObservacoes = require('../components/SecaoObservacoes.jsx');
+const SecaoProximosPassos = require('../components/SecaoProximosPassos.jsx');
 const COLORS = require('../tokens.js');
 
-// Layout aprovado no Claude Design (regressão #89) — ver contrato-pdf.md, seção "Referência
-// visual". Fontes do documento seguem Helvetica/Arial (sem @font-face externo) por decisão de
-// confiabilidade do Puppeteer, mesmo o design de origem usando Google Fonts (Inter/Nunito) — ver
-// nota em htmlRenderer.js sobre não depender de recurso externo na renderização.
+// P-F008 — redesign por componentização de seção (Design aprovado "Preview.html"). Alteração
+// aprovada sobre o Design original: rótulo "Rascunho" vira "Aguardando aprovação" — tradução já
+// feita em Java (PdfMapper.formatarStatusOrcamento), o template só exibe `documento.status` pronto.
+// "Aprovação" fica sempre traço na Seção 3 — o contrato de Orçamento não carrega essa data (só
+// Orçamento aprovado tem `dataAprovacao`, mas esse campo não existe neste schema). Seção 4 mostra
+// forma de pagamento/início estimado sempre como traço — mesma decisão do Design original (esses
+// dados só fazem sentido a partir do sinal/produção, não na fase de orçamento).
 const styles = {
   page: {
     width: '210mm',
@@ -18,6 +27,8 @@ const styles = {
     fontSize: '11px',
     color: COLORS.ink,
     lineHeight: 1.4,
+    display: 'flex',
+    flexDirection: 'column',
   },
   headerRightLabel: {
     fontSize: '11px',
@@ -27,157 +38,116 @@ const styles = {
     letterSpacing: '0.08em',
   },
   headerRightNumero: { fontSize: '24px', fontWeight: 'bold', color: COLORS.ink, letterSpacing: '-0.02em', marginTop: '2px' },
-  metaGrid: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr 1fr',
-    gap: '16px',
-    marginTop: '22px',
-    padding: '22px 0',
-    borderBottom: `1px solid ${COLORS.borderLight}`,
-  },
-  metaLabel: {
-    fontSize: '7.5px',
-    fontWeight: 600,
-    color: COLORS.labelMuted,
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-    marginBottom: '6px',
-  },
-  metaValue: { fontSize: '10px', fontWeight: 600, color: COLORS.ink, margin: '4px 0' },
-  metaHighlight: { fontSize: '14px', fontWeight: 600, color: COLORS.teal, marginTop: '3px' },
-  metaSubvalue: { fontSize: '9px', color: COLORS.textSecondary, marginTop: '2px' },
-  metaClienteNome: { fontSize: '11px', fontWeight: 600, color: COLORS.ink },
-  metaClienteContato: { fontSize: '9px', color: COLORS.textSecondary, marginTop: '2px' },
-  metodoSection: { padding: '14px 0', borderBottom: `1px solid ${COLORS.borderLight}` },
-  metodoLabel: {
-    fontSize: '7.5px',
-    fontWeight: 600,
-    color: COLORS.labelMuted,
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-    marginBottom: '6px',
-  },
-  metodoValue: { fontSize: '10px', fontWeight: 600, color: COLORS.ink },
-  sinalSection: {
-    marginTop: '24px',
-    padding: '16px 18px',
-    borderRadius: '12px',
-    backgroundColor: 'rgba(42,157,143,0.05)',
-    border: '1.5px solid rgba(42,157,143,0.4)',
-  },
-  sinalTitleRow: { display: 'flex', alignItems: 'center', gap: '9px', marginBottom: '8px' },
-  sinalIconeChip: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '24px',
-    height: '24px',
-    borderRadius: '7px',
-    backgroundColor: COLORS.white,
-    border: '1px solid rgba(42,157,143,0.25)',
-    color: COLORS.teal,
-  },
-  sinalTitle: { fontSize: '10.5px', fontWeight: 'bold', color: COLORS.ink },
-  sinalDesc: { fontSize: '8.5px', color: COLORS.textMuted, marginBottom: '12px', lineHeight: 1.4 },
-  sinalValues: { display: 'flex', gap: '10px', flexWrap: 'wrap' },
-  sinalValueCell: { flex: 1, minWidth: '120px', padding: '8px 10px', borderRadius: '8px', backgroundColor: COLORS.white, border: '1px solid rgba(42,157,143,0.2)' },
-  sinalValueCellRestante: { flex: 1, minWidth: '120px', padding: '8px 10px', borderRadius: '8px', backgroundColor: COLORS.white, border: `1px solid ${COLORS.borderLight}` },
-  sinalValueLabel: {
-    fontSize: '7px',
-    fontWeight: 600,
-    color: COLORS.labelMuted,
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-  },
-  sinalValueLabelDestaque: {
-    fontSize: '7px',
-    fontWeight: 600,
-    color: COLORS.teal,
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-  },
-  sinalValueAmount: { fontSize: '12px', fontWeight: 'bold', color: COLORS.teal, marginTop: '2px' },
-  sinalValueAmountRestante: { fontSize: '12px', fontWeight: 'bold', color: COLORS.ink, marginTop: '2px' },
-  totaisSection: { marginTop: '22px', display: 'flex', justifyContent: 'flex-end' },
-  totaisTable: { width: '260px' },
-  totaisRow: { display: 'flex', justifyContent: 'space-between', padding: '5px 10px', fontSize: '9px', color: COLORS.textMuted },
-  totaisRowDescontoValue: { fontWeight: 600, color: COLORS.red },
-  totaisRowSinal: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    margin: '4px 0',
-    padding: '7px 9px',
-    borderRadius: '7px',
-    fontSize: '8.5px',
-    fontWeight: 600,
-    color: COLORS.teal,
-    backgroundColor: 'rgba(42,157,143,0.07)',
-    border: '1px dashed rgba(42,157,143,0.4)',
-  },
-  totaisRowTotal: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    padding: '7px 10px',
-    fontSize: '11px',
-    fontWeight: 'bold',
-    backgroundColor: COLORS.orangeLight,
-    borderRadius: '6px',
-    marginTop: '4px',
-  },
-  totaisRowTotalValue: { fontSize: '15px', color: COLORS.orange },
-  totaisRowRestante: { display: 'flex', justifyContent: 'space-between', padding: '7px 10px 0', fontSize: '9px', color: COLORS.textMuted },
-  totaisRowRestanteValue: { fontWeight: 600, color: COLORS.ink },
-  obsSection: {
-    marginTop: '26px',
-    padding: '16px 18px',
-    borderRadius: '10px',
-    backgroundColor: COLORS.offWhite,
-    border: `1px solid ${COLORS.borderLight}`,
-  },
-  obsLabel: {
-    fontSize: '9px',
-    fontWeight: 600,
-    color: COLORS.labelMuted,
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-    marginBottom: '6px',
-  },
-  obsContent: { fontSize: '9px', color: COLORS.ink, lineHeight: 1.5 },
   clausula: { margin: '14px 0 0', fontSize: '8px', lineHeight: 1.55, color: COLORS.labelMuted },
 };
 
-function IconeCarteira() {
+function IconeDoc() {
   return React.createElement(
     'svg',
-    { viewBox: '0 0 24 24', width: '14', height: '14', fill: 'none', stroke: 'currentColor', strokeWidth: 1.7, strokeLinecap: 'round', strokeLinejoin: 'round' },
-    React.createElement('path', { d: 'M4 7.5A1.5 1.5 0 0 1 5.5 6H18a1.5 1.5 0 0 1 1.5 1.5V9M4 7.5V18a1.5 1.5 0 0 0 1.5 1.5h13A1.5 1.5 0 0 0 20 18v-2.5M4 7.5h14.5a1.5 1.5 0 0 1 1.5 1.5V12' }),
-    React.createElement('path', { d: 'M20 12h-3.2a1.8 1.8 0 0 0 0 3.6H20V12Z' }),
+    { viewBox: '0 0 24 24', width: '20', height: '20', fill: 'none', stroke: 'currentColor', strokeWidth: 1.7, strokeLinecap: 'round', strokeLinejoin: 'round' },
+    React.createElement('path', { d: 'M6 3.5h7l5 5V20a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z' }),
+    React.createElement('path', { d: 'M13 3.5V9h5' }),
+    React.createElement('path', { d: 'M8.5 13.5h7M8.5 16.5h5' }),
+  );
+}
+
+function IconeCheckCircle() {
+  return React.createElement(
+    'svg',
+    { viewBox: '0 0 24 24', width: '15', height: '15', fill: 'none', stroke: 'currentColor', strokeWidth: 1.7, strokeLinecap: 'round', strokeLinejoin: 'round' },
+    React.createElement('circle', { cx: '12', cy: '12', r: '8.5' }),
+    React.createElement('path', { d: 'm8.3 12.2 2.5 2.5 4.9-5', strokeWidth: '2' }),
+  );
+}
+
+function IconeSeta() {
+  return React.createElement(
+    'svg',
+    { viewBox: '0 0 24 24', width: '15', height: '15', fill: 'none', stroke: 'currentColor', strokeWidth: 1.7, strokeLinecap: 'round', strokeLinejoin: 'round' },
+    React.createElement('path', { d: 'M5 12h13M13 6.5 18.5 12 13 17.5' }),
   );
 }
 
 function OrcamentoDoc({ empresa, documento }) {
   const {
     numeroFormatado,
+    status,
     nomeCliente,
     telefoneCliente,
-    emailCliente,
     dataEmissao,
     dataValidade,
     prazoProducao,
-    inicioProducao,
     metodoPagamento,
     sinalAtivo,
     valorSinal,
     restanteAposSinal,
+    percentualSinal,
     subtotal,
     desconto,
     percentualDesconto,
-    percentualSinal,
     total,
     observacoes,
     itens,
   } = documento;
+
+  const linhasCalculadora = [{ tipo: 'simples', label: 'Subtotal', value: subtotal }];
+  if (desconto) {
+    linhasCalculadora.push({
+      tipo: 'simples',
+      label: 'Desconto' + (percentualDesconto ? ` (${percentualDesconto})` : ''),
+      value: '− ' + desconto,
+      corValor: COLORS.red,
+    });
+  }
+  if (sinalAtivo && percentualSinal) {
+    linhasCalculadora.push({
+      tipo: 'destaque-tracejado',
+      label: `Sinal solicitado (${percentualSinal})`,
+      value: valorSinal,
+      corDestaque: COLORS.teal,
+    });
+  }
+  linhasCalculadora.push({ tipo: 'total', label: 'Total', value: total, corDestaque: COLORS.orange });
+  if (sinalAtivo) {
+    linhasCalculadora.push({ tipo: 'simples', label: 'Restante após sinal', value: restanteAposSinal });
+  }
+
+  const aprovado = status === 'Aprovado';
+  const corTexto = { fontWeight: 'bold', color: '#1F7A6F' };
+  const passos = aprovado
+    ? React.createElement(
+        React.Fragment,
+        null,
+        React.createElement('strong', { style: corTexto }, 'Orçamento aprovado! '),
+        sinalAtivo
+          ? React.createElement(
+              React.Fragment,
+              null,
+              'Assim que o sinal de ',
+              React.createElement('strong', { style: corTexto }, valorSinal),
+              ' for identificado, a produção será iniciada.',
+            )
+          : 'A produção será iniciada em breve.',
+      )
+    : React.createElement(
+        React.Fragment,
+        null,
+        'Após a aprovação da cliente',
+        sinalAtivo
+          ? React.createElement(
+              React.Fragment,
+              null,
+              ', será solicitado um sinal de ',
+              React.createElement('strong', { style: corTexto }, percentualSinal),
+              ' (',
+              React.createElement('strong', { style: corTexto }, valorSinal),
+              ') para iniciar a produção',
+            )
+          : ', a produção será iniciada',
+        '. Prazo estimado de entrega: ',
+        React.createElement('strong', { style: { fontWeight: 'bold', color: COLORS.textMuted } }, prazoProducao),
+        '.',
+      );
 
   return React.createElement(
     'div',
@@ -189,155 +159,57 @@ function OrcamentoDoc({ empresa, documento }) {
       React.createElement('div', { style: styles.headerRightNumero }, '#' + numeroFormatado),
     ),
 
-    React.createElement(
-      'div',
-      { style: styles.metaGrid },
-      React.createElement(
-        'div',
-        null,
-        React.createElement('div', { style: styles.metaLabel }, 'Datas'),
-        React.createElement('div', { style: styles.metaValue }, 'Emissão: ', React.createElement('strong', null, dataEmissao)),
-        React.createElement('div', { style: styles.metaValue }, 'Validade: ', React.createElement('strong', null, dataValidade)),
-      ),
-      React.createElement(
-        'div',
-        null,
-        React.createElement('div', { style: styles.metaLabel }, 'Prazo de produção'),
-        React.createElement('div', { style: styles.metaHighlight }, prazoProducao),
-        React.createElement('div', { style: styles.metaSubvalue }, 'Início: ' + inicioProducao),
-      ),
-      React.createElement(
-        'div',
-        null,
-        React.createElement('div', { style: styles.metaLabel }, 'Cliente'),
-        React.createElement('div', { style: styles.metaClienteNome }, nomeCliente),
-        telefoneCliente
-          ? React.createElement('div', { style: styles.metaClienteContato }, telefoneCliente)
-          : null,
-        emailCliente
-          ? React.createElement('div', { style: styles.metaClienteContato }, emailCliente)
-          : null,
-      ),
-    ),
+    React.createElement(SecaoTitulo, {
+      corDestaque: COLORS.teal,
+      icone: React.createElement(IconeDoc),
+      titulo: 'Orçamento',
+    }),
+
+    React.createElement(SecaoDatasCliente, {
+      datas: [
+        { label: 'Emissão', value: dataEmissao },
+        { label: 'Aprovação', value: '—' },
+        { label: 'Validade', value: dataValidade },
+        { label: 'Prazo', value: prazoProducao },
+      ],
+      cliente: { nome: nomeCliente, whatsapp: telefoneCliente },
+    }),
+
+    React.createElement(SecaoStatus, {
+      corDestaque: COLORS.teal,
+      icone: React.createElement(IconeCheckCircle),
+      tituloStatus: status,
+      campos: [
+        { label: 'Forma de pagamento', value: null },
+        { label: 'Início estimado', value: null },
+      ],
+    }),
+
+    React.createElement('div', { style: { marginTop: '26px' } }, React.createElement(ItemTable, { itens })),
+
+    React.createElement(SecaoCalculadora, { linhas: linhasCalculadora }),
+
+    React.createElement(SecaoObservacoes, { texto: observacoes }),
+
+    React.createElement(SecaoProximosPassos, { corDestaque: COLORS.teal, icone: React.createElement(IconeSeta) }, passos),
 
     React.createElement(
       'div',
-      { style: styles.metodoSection },
-      React.createElement('div', { style: styles.metodoLabel }, 'Método de pagamento'),
-      React.createElement('div', { style: styles.metodoValue }, metodoPagamento),
-    ),
-
-    React.createElement(ItemTable, { itens }),
-
-    sinalAtivo
-      ? React.createElement(
-          'div',
-          { style: styles.sinalSection },
-          React.createElement(
-            'div',
-            { style: styles.sinalTitleRow },
-            React.createElement('span', { style: styles.sinalIconeChip }, React.createElement(IconeCarteira)),
-            React.createElement('div', { style: styles.sinalTitle }, 'Entrada solicitada'),
-          ),
-          React.createElement(
-            'div',
-            { style: styles.sinalDesc },
-            percentualSinal
-              ? 'Para iniciar a produção, solicitamos o pagamento de ' + percentualSinal + ' do valor total.'
-              : 'Para iniciar a produção, solicitamos o pagamento do sinal indicado abaixo.',
-          ),
-          React.createElement(
-            'div',
-            { style: styles.sinalValues },
-            React.createElement(
-              'div',
-              { style: styles.sinalValueCell },
-              React.createElement('div', { style: styles.sinalValueLabelDestaque }, 'Valor do sinal'),
-              React.createElement('div', { style: styles.sinalValueAmount }, valorSinal),
-            ),
-            React.createElement(
-              'div',
-              { style: styles.sinalValueCellRestante },
-              React.createElement('div', { style: styles.sinalValueLabel }, 'Restante na entrega'),
-              React.createElement('div', { style: styles.sinalValueAmountRestante }, restanteAposSinal),
-            ),
-          ),
-        )
-      : null,
-
-    React.createElement(
-      'div',
-      { style: styles.totaisSection },
+      { style: { marginTop: 'auto' } },
       React.createElement(
-        'div',
-        { style: styles.totaisTable },
-        React.createElement(
-          'div',
-          { style: styles.totaisRow },
-          React.createElement('span', null, 'Subtotal'),
-          React.createElement('span', null, subtotal),
-        ),
-        desconto
-          ? React.createElement(
-              'div',
-              { style: styles.totaisRow },
-              React.createElement('span', null, 'Desconto' + (percentualDesconto ? ' (' + percentualDesconto + ')' : '')),
-              React.createElement('span', { style: styles.totaisRowDescontoValue }, '− ' + desconto),
-            )
-          : null,
-        sinalAtivo && percentualSinal
-          ? React.createElement(
-              'div',
-              { style: styles.totaisRowSinal },
-              React.createElement(
-                'span',
-                { style: { display: 'flex', alignItems: 'center', gap: '5px' } },
-                React.createElement(IconeCarteira),
-                'Sinal solicitado (' + percentualSinal + ')',
-              ),
-              React.createElement('span', null, valorSinal),
-            )
-          : null,
-        React.createElement(
-          'div',
-          { style: styles.totaisRowTotal },
-          React.createElement('span', null, 'Total'),
-          React.createElement('span', { style: styles.totaisRowTotalValue }, total),
-        ),
-        sinalAtivo
-          ? React.createElement(
-              'div',
-              { style: styles.totaisRowRestante },
-              React.createElement('span', null, 'Restante após sinal'),
-              React.createElement('span', { style: styles.totaisRowRestanteValue }, restanteAposSinal),
-            )
-          : null,
+        DocumentFooter,
+        null,
+        'Este orçamento é válido até ',
+        React.createElement('strong', null, dataValidade),
+        '.',
       ),
-    ),
-
-    observacoes
-      ? React.createElement(
-          'div',
-          { style: styles.obsSection },
-          React.createElement('div', { style: styles.obsLabel }, 'Observações'),
-          React.createElement('div', { style: styles.obsContent }, observacoes),
-        )
-      : null,
-
-    React.createElement(
-      DocumentFooter,
-      null,
-      'Este orçamento é válido até ',
-      React.createElement('strong', null, dataValidade),
-      '.',
-    ),
-    // Cláusula estática (sem valor/percentual dinâmico — não há campo no contrato para taxa de
-    // cancelamento hoje). Aprovado para esta rodada com o texto fixo abaixo; melhorar na V0.8.1
-    // com dado real vindo do backend. Ver pendência em contrato-pdf.md.
-    React.createElement(
-      'p',
-      { style: styles.clausula },
-      'Em caso de cancelamento após aprovação, poderá ser cobrada uma taxa referente aos materiais e ao tempo já investidos na produção, conforme acordado previamente com a empresa.',
+      // Cláusula estática (sem valor/percentual dinâmico — não há campo no contrato para taxa de
+      // cancelamento na fase de orçamento, antes de qualquer cancelamento real acontecer).
+      React.createElement(
+        'p',
+        { style: styles.clausula },
+        'Em caso de cancelamento após aprovação, poderá ser cobrada uma taxa referente aos materiais e ao tempo já investidos na produção, conforme acordado previamente com a empresa.',
+      ),
     ),
   );
 }
