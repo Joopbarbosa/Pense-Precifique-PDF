@@ -24,6 +24,7 @@ const itemPdfSchema = z.object({
 
 const documentoOrcamentoSchema = z.object({
   numeroFormatado: z.string(),
+  status: z.string(),
   nomeCliente: z.string(),
   dataEmissao: z.string(),
   dataValidade: z.string(),
@@ -68,6 +69,8 @@ const orcamentoSchema = z.object({
 const documentoReciboSinalSchema = z.object({
   numeroFormatado: z.string(),
   nomeCliente: z.string(),
+  telefoneCliente: z.string().nullable().optional(),
+  emailCliente: z.string().nullable().optional(),
   metodoRecebido: z.string(),
   valorRecebido: z.string(),
   dataAprovacao: z.string(),
@@ -91,12 +94,16 @@ const reciboSinalSchema = z.object({
 const documentoPdfMultaSchema = z.object({
   numeroFormatado: z.string(),
   nomeCliente: z.string(),
+  telefoneCliente: z.string().nullable().optional(),
+  emailCliente: z.string().nullable().optional(),
   motivo: z.string().nullable(),
   percentualMulta: z.string(),
   valorMulta: z.string(),
   dataAprovacao: z.string(),
   prazoProducao: z.string(),
   inicioProducao: z.string(),
+  dataCancelamento: z.string(),
+  itens: z.array(itemPdfSchema),
 });
 
 const pdfMultaSchema = z.object({
@@ -119,6 +126,8 @@ const reciboEstornoSchema = z.object({
 const documentoReciboPagamentoSchema = z.object({
   numeroFormatado: z.string(),
   nomeCliente: z.string(),
+  telefoneCliente: z.string().nullable().optional(),
+  emailCliente: z.string().nullable().optional(),
   metodoPagamento: z.string(),
   valorTotal: z.string(),
   valorSinalPago: z.string(),
@@ -128,6 +137,7 @@ const documentoReciboPagamentoSchema = z.object({
   prazoProducao: z.string(),
   inicioProducao: z.string(),
   dataPagamento: z.string(),
+  itens: z.array(itemPdfSchema),
 });
 
 const reciboPagamentoSchema = z.object({
