@@ -14,6 +14,7 @@ module.exports = {
   textMuted: '#5C594F', // texto secundário (descrições, totais)
   textSecondary: '#7C786F', // contato, subvalores
   red: '#C0492B', // valor de desconto
+  success: '#1F8A5B', // quitação total (recibo-pagamento) — mesmo valor de `success` no tailwind.config.ts do frontend
   white: '#FFFFFF',
   offWhite: '#FBFAF8', // fundo da seção de observações
 };
