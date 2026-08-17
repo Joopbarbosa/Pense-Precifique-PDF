@@ -10,6 +10,7 @@ const payloadValido = {
   empresa: { nome: 'Studio da Ana', email: 'ana@studio.com', whatsapp: '(11) 99999-1234', logoUrl: null },
   documento: {
     numeroFormatado: '47',
+    status: 'Aguardando aprovação',
     nomeCliente: 'Mariana Costa',
     dataEmissao: '10/08/2026',
     dataValidade: '20/08/2026',
@@ -123,6 +124,8 @@ describe('pdfMultaSchema', () => {
       dataAprovacao: '01/01/2026',
       prazoProducao: '15 dias úteis',
       inicioProducao: 'Assim que aprovado',
+      dataCancelamento: '10/01/2026',
+      itens: [],
     },
   };
 
@@ -179,6 +182,7 @@ describe('reciboPagamentoSchema', () => {
       prazoProducao: '15 dias úteis',
       inicioProducao: 'Assim que aprovado',
       dataPagamento: '01/03/2026',
+      itens: [],
     },
   };
 

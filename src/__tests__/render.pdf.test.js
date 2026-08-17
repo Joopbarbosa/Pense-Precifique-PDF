@@ -50,6 +50,7 @@ const payloadValido = {
   empresa: { nome: 'Studio da Ana', email: 'ana@studio.com', whatsapp: '(11) 99999-1234', logoUrl: null },
   documento: {
     numeroFormatado: '47',
+    status: 'Aguardando aprovação',
     nomeCliente: 'Mariana Costa',
     dataEmissao: '10/08/2026',
     dataValidade: '20/08/2026',
