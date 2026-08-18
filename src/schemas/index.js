@@ -85,6 +85,9 @@ const documentoReciboSinalSchema = z.object({
   valorTotalPedido: z.string(),
   percentualSinal: z.string(),
   restante: z.string(),
+  // P-F012 — mesmo tratamento de `motivo` em documentoPdfMultaSchema: PdfMapper.java não aplica
+  // fallback "—" (orc.getObservacoes() direto), fica nullable também aqui.
+  observacoes: z.string().nullable(),
 });
 
 const reciboSinalSchema = z.object({
@@ -141,6 +144,7 @@ const documentoReciboPagamentoSchema = z.object({
   inicioProducao: z.string(),
   dataPagamento: z.string(),
   itens: z.array(itemPdfSchema),
+  observacoes: z.string().nullable(),
 });
 
 const reciboPagamentoSchema = z.object({
