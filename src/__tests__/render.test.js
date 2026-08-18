@@ -114,6 +114,7 @@ const payloadReciboSinalValido = {
     valorTotalPedido: 'R$ 300,00',
     percentualSinal: '50%',
     restante: 'R$ 150,00',
+    observacoes: 'Embalagem para presente incluída.',
   },
 };
 
@@ -127,6 +128,29 @@ describe('GET /render/recibo-sinal/:id?format=html', () => {
     expect(res.headers['content-type']).toContain('text/html');
     expect(res.text).toContain('Mariana Costa');
     expect(res.text).toContain('R$ 150,00');
+  });
+
+  test('observacoes preenchida aparece no HTML renderizado', async () => {
+    const res = await request(app)
+      .get('/render/recibo-sinal/e5f5c3a0-0000-0000-0000-000000000022?format=html')
+      .send(payloadReciboSinalValido);
+
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('Embalagem para presente incluída.');
+  });
+
+  test('observacoes=null não renderiza a seção', async () => {
+    const payload = {
+      ...payloadReciboSinalValido,
+      documento: { ...payloadReciboSinalValido.documento, observacoes: null },
+    };
+
+    const res = await request(app)
+      .get('/render/recibo-sinal/e5f5c3a0-0000-0000-0000-000000000023?format=html')
+      .send(payload);
+
+    expect(res.status).toBe(200);
+    expect(res.text).not.toContain('Observações');
   });
 
   test('payload incompleto retorna 400 com detalhe do campo', async () => {
@@ -243,6 +267,7 @@ const payloadReciboPagamentoValido = {
     inicioProducao: 'Assim que aprovado',
     dataPagamento: '01/03/2026',
     itens: [],
+    observacoes: 'Embalagem para presente incluída.',
   },
 };
 
@@ -256,6 +281,29 @@ describe('GET /render/recibo-pagamento/:id?format=html', () => {
     expect(res.headers['content-type']).toContain('text/html');
     expect(res.text).toContain('Mariana Costa');
     expect(res.text).toContain('R$ 1.000,00');
+  });
+
+  test('observacoes preenchida aparece no HTML renderizado', async () => {
+    const res = await request(app)
+      .get('/render/recibo-pagamento/e5f5c3a0-0000-0000-0000-000000000029?format=html')
+      .send(payloadReciboPagamentoValido);
+
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('Embalagem para presente incluída.');
+  });
+
+  test('observacoes=null não renderiza a seção', async () => {
+    const payload = {
+      ...payloadReciboPagamentoValido,
+      documento: { ...payloadReciboPagamentoValido.documento, observacoes: null },
+    };
+
+    const res = await request(app)
+      .get('/render/recibo-pagamento/e5f5c3a0-0000-0000-0000-000000000030?format=html')
+      .send(payload);
+
+    expect(res.status).toBe(200);
+    expect(res.text).not.toContain('Observações');
   });
 
   test('campo obrigatório faltando retorna 400 com detalhe do campo', async () => {

@@ -99,11 +99,20 @@ describe('reciboSinalSchema', () => {
       valorTotalPedido: 'R$ 300,00',
       percentualSinal: '50%',
       restante: 'R$ 150,00',
+      observacoes: 'Embalagem para presente incluída.',
     },
   };
 
   test('payload válido passa a validação', () => {
     expect(reciboSinalSchema.safeParse(payloadValidoReciboSinal).success).toBe(true);
+  });
+
+  test('observacoes aceita null explícito', () => {
+    const payload = {
+      ...payloadValidoReciboSinal,
+      documento: { ...payloadValidoReciboSinal.documento, observacoes: null },
+    };
+    expect(reciboSinalSchema.safeParse(payload).success).toBe(true);
   });
 
   test('campo obrigatório faltando é rejeitado', () => {
@@ -186,11 +195,20 @@ describe('reciboPagamentoSchema', () => {
       inicioProducao: 'Assim que aprovado',
       dataPagamento: '01/03/2026',
       itens: [],
+      observacoes: 'Embalagem para presente incluída.',
     },
   };
 
   test('payload válido passa a validação', () => {
     expect(reciboPagamentoSchema.safeParse(payloadValidoReciboPagamento).success).toBe(true);
+  });
+
+  test('observacoes aceita null explícito', () => {
+    const payload = {
+      ...payloadValidoReciboPagamento,
+      documento: { ...payloadValidoReciboPagamento.documento, observacoes: null },
+    };
+    expect(reciboPagamentoSchema.safeParse(payload).success).toBe(true);
   });
 
   test('campo obrigatório faltando é rejeitado', () => {
