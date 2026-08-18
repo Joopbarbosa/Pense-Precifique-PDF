@@ -13,8 +13,9 @@ const COLORS = require('../tokens.js');
 // variante Quitação Total — a variante "Entrada" do mock já é o próprio Recibo do Sinal no domínio
 // atual, guard SINAL_PAGO vs PAGO em ReciboPdfPayloadService/ReciboPagamentoPdfPayloadService,
 // confirmado no Passo 0). Sem Seção 8 (Próximos passos) — mesma decisão do Design: quitação total
-// não tem próximo pagamento a instruir. "Emissão"/"Validade" ficam traço na Seção 3 — schema não
-// carrega essas datas para este tipo de documento.
+// não tem próximo pagamento a instruir. "Validade" fica traço na Seção 3 — schema não carrega
+// essa data para este tipo de documento. "Emissão" passou a vir do backend (data de geração do
+// documento — P-F009) desde que o schema ganhou o campo `dataEmissao`.
 const styles = {
   page: {
     width: '210mm',
@@ -76,6 +77,7 @@ function ReciboPagamentoDoc({ empresa, documento }) {
     valorSinalPago,
     valorRestantePago,
     totalQuitado,
+    dataEmissao,
     dataAprovacao,
     prazoProducao,
     dataPagamento,
@@ -100,7 +102,7 @@ function ReciboPagamentoDoc({ empresa, documento }) {
 
     React.createElement(SecaoDatasCliente, {
       datas: [
-        { label: 'Emissão', value: '—' },
+        { label: 'Emissão', value: dataEmissao },
         { label: 'Aprovação', value: dataAprovacao },
         { label: 'Validade', value: '—' },
         { label: 'Prazo', value: prazoProducao },

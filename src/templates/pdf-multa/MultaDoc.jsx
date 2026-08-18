@@ -13,9 +13,10 @@ const COLORS = require('../tokens.js');
 // P-F008 — redesign por componentização de seção (Design aprovado "Multa-PDF.html"). Substitui a
 // versão monolítica anterior (#248). "Prazo" fica sempre traço na Seção 3 — decisão do próprio
 // Design (documento de cancelamento não tem prazo de produção remanescente), não ausência de dado.
-// "Emissão"/"Validade" ficam traço porque o schema de Multa não carrega essas datas (nunca
-// carregou, fora do escopo de P-F008 expandir). Alteração aprovada sobre o Design original: Seção
-// 4 usa "Data de cancelamento" no lugar de "Início estimado".
+// "Validade" fica traço porque o schema de Multa não carrega essa data (nunca carregou, fora do
+// escopo de P-F008 expandir). "Emissão" passou a vir do backend (data de geração do documento —
+// P-F009) desde que o schema ganhou o campo `dataEmissao`. Alteração aprovada sobre o Design
+// original: Seção 4 usa "Data de cancelamento" no lugar de "Início estimado".
 const styles = {
   page: {
     width: '210mm',
@@ -84,6 +85,7 @@ function MultaDoc({ empresa, documento }) {
     telefoneCliente,
     percentualMulta,
     valorMulta,
+    dataEmissao,
     dataAprovacao,
     dataCancelamento,
     itens,
@@ -107,7 +109,7 @@ function MultaDoc({ empresa, documento }) {
 
     React.createElement(SecaoDatasCliente, {
       datas: [
-        { label: 'Emissão', value: '—' },
+        { label: 'Emissão', value: dataEmissao },
         { label: 'Aprovação', value: dataAprovacao },
         { label: 'Validade', value: '—' },
         { label: 'Prazo', value: '—' },

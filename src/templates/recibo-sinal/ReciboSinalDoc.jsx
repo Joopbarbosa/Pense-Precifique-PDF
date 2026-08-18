@@ -11,9 +11,10 @@ const SecaoProximosPassos = require('../components/SecaoProximosPassos.jsx');
 const COLORS = require('../tokens.js');
 
 // P-F008 — redesign por componentização de seção (Design aprovado "Recibo-Sinal.html"). Substitui
-// a versão monolítica anterior (P-F007b/c). "Emissão"/"Validade" ficam traço na Seção 3 — o schema
-// de recibo-sinal não carrega essas datas (fora do escopo de P-F008 expandir o contrato além do
-// aprovado em Passo 0).
+// a versão monolítica anterior (P-F007b/c). "Validade" fica traço na Seção 3 — o schema de
+// recibo-sinal não carrega essa data (fora do escopo de P-F008 expandir o contrato além do
+// aprovado em Passo 0). "Emissão" passou a vir do backend (data de geração do documento —
+// P-F009) desde que o schema ganhou o campo `dataEmissao`.
 const styles = {
   page: {
     width: '210mm',
@@ -80,6 +81,7 @@ function ReciboSinalDoc({ empresa, documento }) {
     telefoneCliente,
     metodoRecebido,
     valorRecebido,
+    dataEmissao,
     dataAprovacao,
     prazoProducao,
     inicioProducao,
@@ -109,7 +111,7 @@ function ReciboSinalDoc({ empresa, documento }) {
 
     React.createElement(SecaoDatasCliente, {
       datas: [
-        { label: 'Emissão', value: '—' },
+        { label: 'Emissão', value: dataEmissao },
         { label: 'Aprovação', value: dataAprovacao },
         { label: 'Validade', value: '—' },
         { label: 'Prazo', value: prazoProducao },
