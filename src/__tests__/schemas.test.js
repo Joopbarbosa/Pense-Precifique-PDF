@@ -162,13 +162,24 @@ describe('reciboEstornoSchema', () => {
     documento: {
       numeroFormatado: '47',
       nomeCliente: 'Mariana Costa',
+      telefoneCliente: '(11) 98888-7777',
+      emailCliente: 'mariana@email.com',
       valorRecebido: 'R$ 150,00',
       dataEstorno: '05/01/2026',
+      dataEmissao: '20/08/2026',
+      dataAprovacao: '01/01/2026',
+      motivo: 'Cliente desistiu da encomenda',
+      itens: [],
     },
   };
 
   test('payload válido passa a validação', () => {
     expect(reciboEstornoSchema.safeParse(payloadValidoReciboEstorno).success).toBe(true);
+  });
+
+  test('motivo aceita null explícito', () => {
+    const payload = { ...payloadValidoReciboEstorno, documento: { ...payloadValidoReciboEstorno.documento, motivo: null } };
+    expect(reciboEstornoSchema.safeParse(payload).success).toBe(true);
   });
 
   test('campo obrigatório faltando é rejeitado', () => {

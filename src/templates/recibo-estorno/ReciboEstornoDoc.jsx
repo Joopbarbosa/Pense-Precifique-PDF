@@ -1,19 +1,25 @@
 const React = require('react');
 const DocumentHeader = require('../components/DocumentHeader.jsx');
 const DocumentFooter = require('../components/DocumentFooter.jsx');
+const ItemTable = require('../components/ItemTable.jsx');
+const SecaoTitulo = require('../components/SecaoTitulo.jsx');
+const SecaoDatasCliente = require('../components/SecaoDatasCliente.jsx');
+const SecaoStatus = require('../components/SecaoStatus.jsx');
+const SecaoCalculadora = require('../components/SecaoCalculadora.jsx');
+const SecaoObservacoes = require('../components/SecaoObservacoes.jsx');
+const SecaoProximosPassos = require('../components/SecaoProximosPassos.jsx');
 const COLORS = require('../tokens.js');
 
-// Migração #248 (V0.8.1) — sem Design próprio no Claude Design (não existe mock para este tipo,
-// ver contrato-pdf.md/decisoes-pdf.md); segue o mesmo padrão visual (icon chip + card de destaque)
-// dos outros 3 documentos recém-migrados. Cor de destaque `orange` — mesmo acento já usado para
-// estorno em DetalheOrcamentoPage.tsx (card do passo 2 do wizard de cancelamento com estorno,
-// frontend), reaproveitado aqui por consistência. reciboEstornoSchema só tem 4 campos (sem
-// dataAprovacao/prazoProducao/inicioProducao) — nenhuma seção "Próximos passos"/"Instrução de
-// pagamento" aqui: um estorno não tem próximo pagamento a instruir, e não há dado real pras
-// datas de produção. Sem SignatureBlock (mesma decisão já registrada em decisoes-pdf.md).
-const ORANGE_SOFT = 'rgba(249,115,22,0.08)';
-const ORANGE_LINE = 'rgba(249,115,22,0.28)';
-
+// P-F014 (V0.8.1) — redesign por componentização de seção, sem Design aprovado no Claude Design
+// para este documento (não existe mock, ver decisoes-pdf.md) — layout inferido por analogia direta
+// com MultaDoc.jsx, o mais próximo em espírito (documento de cancelamento, sem produção
+// remanescente). Substitui a versão monolítica de 4 campos anterior (P-F008a/RECONCILIA-004).
+// Cor de destaque `orange` mantida — mesmo acento já usado para estorno em
+// DetalheOrcamentoPage.tsx (frontend) e na versão anterior deste template. "Prazo"/"Validade"
+// ficam traço fixo na Seção 3, mesma decisão já tomada para Multa (cancelamento não tem produção
+// remanescente) — payload não carrega esses dois campos para este tipo de documento. Payload
+// completo (telefoneCliente/emailCliente/dataEmissao/dataAprovacao/motivo/itens) só existe desde
+// P-B004 (2026-08-20) — antes disso o payload de Estorno tinha só 4 campos.
 const styles = {
   page: {
     width: '210mm',
@@ -24,6 +30,8 @@ const styles = {
     fontSize: '11px',
     color: COLORS.ink,
     lineHeight: 1.4,
+    display: 'flex',
+    flexDirection: 'column',
   },
   headerRightLabel: {
     fontSize: '11px',
@@ -33,69 +41,6 @@ const styles = {
     letterSpacing: '0.08em',
   },
   headerRightNumero: { fontSize: '24px', fontWeight: 'bold', color: COLORS.ink, letterSpacing: '-0.02em', marginTop: '2px' },
-  tituloCard: {
-    marginTop: '22px',
-    padding: '16px 18px',
-    borderRadius: '10px',
-    backgroundColor: ORANGE_SOFT,
-    border: `1px solid ${ORANGE_LINE}`,
-    borderLeft: `4px solid ${COLORS.orange}`,
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-  },
-  tituloIconeChip: {
-    flexShrink: 0,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '34px',
-    height: '34px',
-    borderRadius: '9px',
-    backgroundColor: COLORS.white,
-    border: `1px solid ${ORANGE_LINE}`,
-    color: COLORS.orange,
-  },
-  tituloHeading: { fontSize: '13px', fontWeight: 'bold', color: COLORS.orange, letterSpacing: '-0.005em' },
-  tituloSub: { fontSize: '8.5px', color: '#8A5A33', marginTop: '3px' },
-  clienteSection: { padding: '18px 0 0' },
-  clienteLabel: {
-    fontSize: '7.5px',
-    fontWeight: 600,
-    color: COLORS.labelMuted,
-    textTransform: 'uppercase',
-    letterSpacing: '0.06em',
-    marginBottom: '5px',
-  },
-  clienteNome: { fontSize: '11.5px', fontWeight: 'bold', color: COLORS.ink },
-  destaqueCard: {
-    marginTop: '18px',
-    padding: '16px 18px',
-    borderRadius: '11px',
-    border: `1.2px solid ${ORANGE_LINE}`,
-    backgroundColor: 'rgba(249,115,22,0.045)',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
-    flexWrap: 'wrap',
-    gap: '16px',
-  },
-  valorLabel: {
-    fontSize: '7.5px',
-    fontWeight: 600,
-    color: COLORS.orange,
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-  },
-  valorAmount: { fontSize: '22px', fontWeight: 'bold', color: COLORS.orange, marginTop: '3px', letterSpacing: '-0.01em' },
-  metaLabel: {
-    fontSize: '7px',
-    fontWeight: 600,
-    color: COLORS.labelMuted,
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-  },
-  metaValue: { fontSize: '9.5px', fontWeight: 600, color: COLORS.ink, marginTop: '2px' },
 };
 
 function IconeEstorno() {
@@ -107,8 +52,35 @@ function IconeEstorno() {
   );
 }
 
+function IconeCheck() {
+  return React.createElement(
+    'svg',
+    { viewBox: '0 0 24 24', width: '14', height: '14', fill: 'none', stroke: 'currentColor', strokeWidth: 2.2, strokeLinecap: 'round', strokeLinejoin: 'round' },
+    React.createElement('path', { d: 'm5 12.5 4.2 4.2L19 7' }),
+  );
+}
+
+function IconeBox() {
+  return React.createElement(
+    'svg',
+    { viewBox: '0 0 24 24', width: '15', height: '15', fill: 'none', stroke: 'currentColor', strokeWidth: 1.7, strokeLinecap: 'round', strokeLinejoin: 'round' },
+    React.createElement('path', { d: 'M12 3.2 20 7.6v8.8L12 20.8 4 16.4V7.6L12 3.2Z' }),
+    React.createElement('path', { d: 'M4 7.6 12 12l8-4.4M12 12v8.8' }),
+  );
+}
+
 function ReciboEstornoDoc({ empresa, documento }) {
-  const { numeroFormatado, nomeCliente, valorRecebido, dataEstorno } = documento;
+  const {
+    numeroFormatado,
+    nomeCliente,
+    telefoneCliente,
+    valorRecebido,
+    dataEstorno,
+    dataEmissao,
+    dataAprovacao,
+    motivo,
+    itens,
+  } = documento;
 
   return React.createElement(
     'div',
@@ -120,48 +92,62 @@ function ReciboEstornoDoc({ empresa, documento }) {
       React.createElement('div', { style: styles.headerRightNumero }, '#' + numeroFormatado),
     ),
 
-    React.createElement(
-      'div',
-      { style: styles.tituloCard },
-      React.createElement('span', { style: styles.tituloIconeChip }, React.createElement(IconeEstorno)),
-      React.createElement(
-        'div',
-        null,
-        React.createElement('div', { style: styles.tituloHeading }, 'RECIBO DE ESTORNO'),
-        React.createElement('div', { style: styles.tituloSub }, 'Referência: Orçamento #' + numeroFormatado),
-      ),
-    ),
+    React.createElement(SecaoTitulo, {
+      corDestaque: COLORS.orange,
+      icone: React.createElement(IconeEstorno),
+      titulo: 'Recibo de Estorno',
+    }),
+
+    React.createElement(SecaoDatasCliente, {
+      datas: [
+        { label: 'Emissão', value: dataEmissao },
+        { label: 'Aprovação', value: dataAprovacao },
+        { label: 'Validade', value: '—' },
+        { label: 'Prazo', value: '—' },
+      ],
+      cliente: { nome: nomeCliente, whatsapp: telefoneCliente },
+    }),
+
+    React.createElement(SecaoStatus, {
+      corDestaque: COLORS.orange,
+      icone: React.createElement(IconeCheck),
+      tituloStatus: 'Sinal estornado',
+      campos: [
+        { label: 'Forma de pagamento', value: null },
+        { label: 'Data do estorno', value: dataEstorno },
+      ],
+    }),
+
+    React.createElement('div', { style: { marginTop: '26px' } }, React.createElement(ItemTable, {
+      itens,
+      titulo: 'Detalhes do produto',
+      icone: React.createElement(IconeBox),
+      corDestaque: COLORS.orange,
+      nota: 'Itens do pedido cancelado, mantidos como referência — nada foi ou será produzido.',
+    })),
+
+    React.createElement(SecaoCalculadora, {
+      linhas: [
+        { tipo: 'total', label: 'Valor devolvido', value: valorRecebido, corDestaque: COLORS.orange },
+      ],
+    }),
+
+    React.createElement(SecaoObservacoes, { texto: motivo }),
 
     React.createElement(
-      'div',
-      { style: styles.clienteSection },
-      React.createElement('div', { style: styles.clienteLabel }, 'Dados da cliente'),
-      React.createElement('div', { style: styles.clienteNome }, nomeCliente),
+      SecaoProximosPassos,
+      { corDestaque: COLORS.orange, icone: React.createElement(IconeCheck) },
+      'O pedido foi cancelado e o valor de ',
+      React.createElement('strong', { style: { fontWeight: 'bold', color: COLORS.orange } }, valorRecebido),
+      ' já foi devolvido à cliente. Nenhuma ação adicional é necessária.',
     ),
 
-    React.createElement(
-      'div',
-      { style: styles.destaqueCard },
-      React.createElement(
-        'div',
-        null,
-        React.createElement('div', { style: styles.valorLabel }, 'Valor estornado'),
-        React.createElement('div', { style: styles.valorAmount }, valorRecebido),
-      ),
-      React.createElement(
-        'div',
-        null,
-        React.createElement('div', { style: styles.metaLabel }, 'Data do estorno'),
-        React.createElement('div', { style: styles.metaValue }, dataEstorno),
-      ),
-    ),
-
-    React.createElement(
+    React.createElement('div', { style: { marginTop: 'auto' } }, React.createElement(
       DocumentFooter,
       null,
       'Recibo de estorno referente ao orçamento #' + numeroFormatado,
       '.',
-    ),
+    )),
   );
 }
 

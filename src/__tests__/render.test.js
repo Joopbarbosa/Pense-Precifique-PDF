@@ -222,8 +222,22 @@ const payloadReciboEstornoValido = {
   documento: {
     numeroFormatado: '47',
     nomeCliente: 'Mariana Costa',
+    telefoneCliente: '(11) 98888-7777',
+    emailCliente: 'mariana@email.com',
     valorRecebido: 'R$ 150,00',
     dataEstorno: '05/01/2026',
+    dataEmissao: '20/08/2026',
+    dataAprovacao: '01/01/2026',
+    motivo: 'Cliente desistiu da encomenda',
+    itens: [
+      {
+        nomeProduto: 'Bolo Vulcão de Chocolate',
+        customizacoes: null,
+        quantidade: '1',
+        precoUnitario: 'R$ 150,00',
+        subtotal: 'R$ 150,00',
+      },
+    ],
   },
 };
 

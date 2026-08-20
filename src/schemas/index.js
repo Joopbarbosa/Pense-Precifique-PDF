@@ -116,11 +116,23 @@ const pdfMultaSchema = z.object({
   documento: documentoPdfMultaSchema,
 });
 
+// P-F014 (V0.8.1) — ampliado para o padrão de 9 seções, paridade com documentoPdfMultaSchema
+// (payload de backend ganhou os campos novos em P-B004). Sem prazoProducao/inicioProducao — mesma
+// decisão já usada em pdfMultaSchema (cancelamento sem produção remanescente), o Doc.jsx usa "—"
+// fixo para essas duas linhas em vez de ler do payload.
 const documentoReciboEstornoSchema = z.object({
   numeroFormatado: z.string(),
   nomeCliente: z.string(),
+  telefoneCliente: z.string().nullable().optional(),
+  emailCliente: z.string().nullable().optional(),
   valorRecebido: z.string(),
   dataEstorno: z.string(),
+  dataEmissao: z.string(),
+  dataAprovacao: z.string(),
+  // mesmo tratamento de `motivo` em documentoPdfMultaSchema: PdfMapper.java não aplica fallback
+  // "—" (orc.getCancelamentoMotivo() direto), fica nullable também aqui.
+  motivo: z.string().nullable(),
+  itens: z.array(itemPdfSchema),
 });
 
 const reciboEstornoSchema = z.object({
