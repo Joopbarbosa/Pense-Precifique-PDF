@@ -51,6 +51,21 @@ implementar, nunca corrigida silenciosamente sem avisar.
 - **Sem autenticação própria (JWT)** — este serviço confia 100% em quem chama (backend/frontend
   já validaram o token). Roda em rede Docker interna, nunca exposto à internet. Não adicionar
   validação de JWT aqui sem antes revisar essa decisão no `ARCHITECTURE.md`.
+- **Layout do documento de Orçamento** — segue a referência visual oficial do Claude Design (ver
+  `contrato-pdf.md`, seção 2.1, `docs-pense-precifique`). Qualquer mudança de layout deve ser
+  cotejada contra essa referência antes de implementar, não decidida ad-hoc.
+
+---
+
+## 4.1 Tokens de cor (extraído — débito resolvido)
+
+- **`src/templates/tokens.js`** centraliza os valores hex antes hardcoded (`#2A9D8F`, `#3A372F`,
+  `#F97316`, etc.) — extraído no commit `6e3ec8b`, gatilho atingido na Epic #248 (novos tipos de
+  documento reaproveitando as cores do template de Orçamento). Reaproveitado hoje pelos 4
+  componentes compartilhados (`DocumentHeader.jsx`, `ItemTable.jsx`, `DocumentFooter.jsx`) e pelos
+  5 templates de documento (`OrcamentoDoc.jsx`, `ReciboSinalDoc.jsx`, `MultaDoc.jsx`,
+  `ReciboEstornoDoc.jsx`, `ReciboPagamentoDoc.jsx`). Não há mais duplicação de cor hardcoded a
+  corrigir — qualquer cor nova do design system entra em `tokens.js`, não direto no componente.
 
 ---
 
