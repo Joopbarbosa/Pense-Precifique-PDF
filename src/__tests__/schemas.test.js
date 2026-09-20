@@ -4,6 +4,7 @@ const {
   pdfMultaSchema,
   reciboEstornoSchema,
   reciboPagamentoSchema,
+  catalogoSchema,
 } = require('../schemas');
 
 const payloadValido = {
@@ -226,5 +227,34 @@ describe('reciboPagamentoSchema', () => {
     const payload = JSON.parse(JSON.stringify(payloadValidoReciboPagamento));
     delete payload.documento.totalQuitado;
     expect(reciboPagamentoSchema.safeParse(payload).success).toBe(false);
+  });
+});
+
+describe('catalogoSchema', () => {
+  const payloadValidoCatalogo = {
+    empresa: { nome: 'Studio da Ana', email: 'ana@studio.com', whatsapp: '(11) 99999-1234', logoUrl: null },
+    documento: {
+      numeroFormatado: '3',
+      nome: 'Kit Presente Dia das Mães',
+      itens: [
+        { nome: 'Kit Presente P', descricao: 'Sabonete + fita de cetim', fotoUrl: 'https://exemplo.r2.dev/foto1.jpg' },
+        { nome: 'Kit Presente G', descricao: null, fotoUrl: null },
+      ],
+    },
+  };
+
+  test('payload válido passa a validação', () => {
+    expect(catalogoSchema.safeParse(payloadValidoCatalogo).success).toBe(true);
+  });
+
+  test('item sem foto/descrição (ambos null) passa a validação', () => {
+    const payload = { ...payloadValidoCatalogo, documento: { ...payloadValidoCatalogo.documento, itens: [payloadValidoCatalogo.documento.itens[1]] } };
+    expect(catalogoSchema.safeParse(payload).success).toBe(true);
+  });
+
+  test('campo obrigatório faltando é rejeitado', () => {
+    const payload = JSON.parse(JSON.stringify(payloadValidoCatalogo));
+    delete payload.documento.nome;
+    expect(catalogoSchema.safeParse(payload).success).toBe(false);
   });
 });

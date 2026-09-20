@@ -164,10 +164,32 @@ const reciboPagamentoSchema = z.object({
   documento: documentoReciboPagamentoSchema,
 });
 
+// OpenProject #519 (RN-NOVA-8) — catálogo não tem cliente/valores/datas de pedido, é uma listagem
+// de itens (foto + nome + descrição) para a artesã enviar pra cliente final. Schema deliberadamente
+// mais enxuto que os demais — sem herdar campos que não se aplicam a este tipo de documento.
+const itemCatalogoPdfSchema = z.object({
+  nome: z.string(),
+  // ambos opcionais — RN-NOVA-6/7 tornam foto e descrição opcionais no cadastro do item.
+  descricao: z.string().nullable(),
+  fotoUrl: z.string().nullable(),
+});
+
+const documentoCatalogoSchema = z.object({
+  numeroFormatado: z.string(),
+  nome: z.string(),
+  itens: z.array(itemCatalogoPdfSchema),
+});
+
+const catalogoSchema = z.object({
+  empresa: empresaSchema,
+  documento: documentoCatalogoSchema,
+});
+
 module.exports = {
   orcamentoSchema,
   reciboSinalSchema,
   pdfMultaSchema,
   reciboEstornoSchema,
   reciboPagamentoSchema,
+  catalogoSchema,
 };
