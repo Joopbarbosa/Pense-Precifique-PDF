@@ -333,5 +333,62 @@ describe('GET /render/recibo-pagamento/:id?format=html', () => {
   });
 });
 
+const payloadCatalogoValido = {
+  empresa: { nome: 'Studio da Ana', email: 'ana@studio.com', whatsapp: '(11) 99999-1234', logoUrl: null },
+  documento: {
+    numeroFormatado: '3',
+    nome: 'Kit Presente Dia das Mães',
+    itens: [
+      { nome: 'Kit Presente P', descricao: 'Sabonete + fita de cetim', fotoUrl: 'https://exemplo.r2.dev/foto1.jpg', precoVenda: 'R$ 45,90' },
+      { nome: 'Kit Presente G', descricao: null, fotoUrl: null, precoVenda: 'R$ 68,00' },
+    ],
+  },
+};
+
+describe('GET /render/catalogo/:id?format=html', () => {
+  test('payload de exemplo retorna 200 e HTML com os dados reais', async () => {
+    const res = await request(app)
+      .get('/render/catalogo/e5f5c3a0-0000-0000-0000-000000000040?format=html')
+      .send(payloadCatalogoValido);
+
+    expect(res.status).toBe(200);
+    expect(res.headers['content-type']).toContain('text/html');
+    expect(res.text).toContain('Kit Presente Dia das Mães');
+    expect(res.text).toContain('Kit Presente P');
+    expect(res.text).toContain('Sabonete + fita de cetim');
+    expect(res.text).toContain('https://exemplo.r2.dev/foto1.jpg');
+    expect(res.text).toContain('R$ 45,90');
+    // Cabeçalho mostra o identificador do catálogo (número), não o nome — nome só aparece
+    // 1x, no título da seção (achado do teste manual, corrige duplicação).
+    expect(res.text).toContain('#3');
+    expect((res.text.match(/Kit Presente Dia das Mães/g) || []).length).toBe(1);
+  });
+
+  test('item sem foto renderiza placeholder (sem <img>) e sem descrição não quebra', async () => {
+    const payload = { ...payloadCatalogoValido, documento: { ...payloadCatalogoValido.documento, itens: [payloadCatalogoValido.documento.itens[1]] } };
+
+    const res = await request(app)
+      .get('/render/catalogo/e5f5c3a0-0000-0000-0000-000000000041?format=html')
+      .send(payload);
+
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('Kit Presente G');
+    expect(res.text).toContain('R$ 68,00');
+    expect(res.text).not.toContain('<img');
+  });
+
+  test('campo obrigatório faltando retorna 400 com detalhe do campo', async () => {
+    const payload = JSON.parse(JSON.stringify(payloadCatalogoValido));
+    delete payload.documento.nome;
+
+    const res = await request(app)
+      .get('/render/catalogo/e5f5c3a0-0000-0000-0000-000000000042?format=html')
+      .send(payload);
+
+    expect(res.status).toBe(400);
+    expect(res.body.detalhes.some((d) => d.campo === 'documento.nome')).toBe(true);
+  });
+});
+
 // Testes de format=pdf ficam em render.pdf.test.js — precisam mockar `puppeteer-core` e setar
 // RENDER_TIMEOUT_SECONDS baixo antes do require de `../index`, o que exige módulo isolado.
