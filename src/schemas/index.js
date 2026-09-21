@@ -172,6 +172,7 @@ const itemCatalogoPdfSchema = z.object({
   // ambos opcionais — RN-NOVA-6/7 tornam foto e descrição opcionais no cadastro do item.
   descricao: z.string().nullable(),
   fotoUrl: z.string().nullable(),
+  precoVenda: z.string(),
 });
 
 const documentoCatalogoSchema = z.object({

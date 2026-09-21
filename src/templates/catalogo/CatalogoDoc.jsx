@@ -29,7 +29,7 @@ const styles = {
     textTransform: 'uppercase',
     letterSpacing: '0.08em',
   },
-  headerRightNome: { fontSize: '20px', fontWeight: 'bold', color: COLORS.ink, letterSpacing: '-0.02em', marginTop: '2px', maxWidth: '260px' },
+  headerRightNumero: { fontSize: '24px', fontWeight: 'bold', color: COLORS.ink, letterSpacing: '-0.02em', marginTop: '2px' },
   grid: {
     marginTop: '22px',
     display: 'grid',
@@ -56,6 +56,7 @@ const styles = {
   corpo: { padding: '12px 14px' },
   nome: { fontSize: '13px', fontWeight: 'bold', color: COLORS.ink, margin: 0 },
   descricao: { fontSize: '10px', color: COLORS.textMuted, marginTop: '5px', lineHeight: 1.45 },
+  preco: { fontSize: '13px', fontWeight: 'bold', color: COLORS.teal, marginTop: '7px' },
 };
 
 function IconeCatalogo() {
@@ -94,12 +95,13 @@ function ItemCard({ item }) {
       { style: styles.corpo },
       React.createElement('p', { style: styles.nome }, item.nome),
       item.descricao ? React.createElement('p', { style: styles.descricao }, item.descricao) : null,
+      React.createElement('p', { style: styles.preco }, item.precoVenda),
     ),
   );
 }
 
 function CatalogoDoc({ empresa, documento }) {
-  const { nome, itens } = documento;
+  const { numeroFormatado, nome, itens } = documento;
 
   return React.createElement(
     'div',
@@ -108,7 +110,7 @@ function CatalogoDoc({ empresa, documento }) {
       DocumentHeader,
       { empresa },
       React.createElement('div', { style: styles.headerRightLabel }, 'Catálogo'),
-      React.createElement('div', { style: styles.headerRightNome }, nome),
+      React.createElement('div', { style: styles.headerRightNumero }, '#' + numeroFormatado),
     ),
 
     React.createElement(SecaoTitulo, {
