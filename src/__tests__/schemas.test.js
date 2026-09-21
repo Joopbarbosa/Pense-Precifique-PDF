@@ -237,8 +237,8 @@ describe('catalogoSchema', () => {
       numeroFormatado: '3',
       nome: 'Kit Presente Dia das Mães',
       itens: [
-        { nome: 'Kit Presente P', descricao: 'Sabonete + fita de cetim', fotoUrl: 'https://exemplo.r2.dev/foto1.jpg' },
-        { nome: 'Kit Presente G', descricao: null, fotoUrl: null },
+        { nome: 'Kit Presente P', descricao: 'Sabonete + fita de cetim', fotoUrl: 'https://exemplo.r2.dev/foto1.jpg', precoVenda: 'R$ 45,90' },
+        { nome: 'Kit Presente G', descricao: null, fotoUrl: null, precoVenda: 'R$ 68,00' },
       ],
     },
   };
