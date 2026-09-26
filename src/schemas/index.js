@@ -186,6 +186,63 @@ const catalogoSchema = z.object({
   documento: documentoCatalogoSchema,
 });
 
+// OpenProject #545 (V0.15.0, RN-NOVA-11) — PDF da compra (COM-N). Tudo formatado pelo backend.
+// statusCodigo: RASCUNHO e CANCELADA saem destacados no documento (não é compra efetivada).
+const itemCompraPdfSchema = z.object({
+  insumo: z.string(),
+  fornecedor: z.string().nullable(),
+  quantidade: z.string(),
+  precoTotal: z.string(),
+  precoUnitario: z.string(),
+});
+
+const documentoCompraSchema = z.object({
+  numeroFormatado: z.string(),
+  status: z.string(),
+  statusCodigo: z.enum(['RASCUNHO', 'CONFIRMADA', 'CANCELADA']),
+  dataCompra: z.string(),
+  fornecedor: z.string(),
+  multiplosFornecedores: z.boolean(),
+  pagamento: z.string(),
+  total: z.string(),
+  observacoes: z.string().nullable(),
+  dataCancelamento: z.string().nullable(),
+  observacaoCancelamento: z.string().nullable(),
+  itens: z.array(itemCompraPdfSchema),
+});
+
+const compraSchema = z.object({
+  empresa: empresaSchema,
+  documento: documentoCompraSchema,
+});
+
+// OpenProject #547 (V0.15.0, RN-NOVA-14) — PDF da lista de compras (LST-N), sempre do retrato
+// gravado na geração. Linhas agrupadas por fornecedor sugerido; "Sem fornecedor" no fim (a ordem
+// dos grupos já vem do backend).
+const itemListaComprasPdfSchema = z.object({
+  insumo: z.string(),
+  unidade: z.string().nullable(),
+  quantidade: z.string(),
+  precoReferencia: z.string().nullable(),
+});
+
+const grupoListaComprasPdfSchema = z.object({
+  fornecedor: z.string(),
+  itens: z.array(itemListaComprasPdfSchema),
+});
+
+const documentoListaComprasSchema = z.object({
+  numeroFormatado: z.string(),
+  dataGeracao: z.string(),
+  quantidadeItens: z.number().int(),
+  grupos: z.array(grupoListaComprasPdfSchema),
+});
+
+const listaComprasSchema = z.object({
+  empresa: empresaSchema,
+  documento: documentoListaComprasSchema,
+});
+
 module.exports = {
   orcamentoSchema,
   reciboSinalSchema,
@@ -193,4 +250,6 @@ module.exports = {
   reciboEstornoSchema,
   reciboPagamentoSchema,
   catalogoSchema,
+  compraSchema,
+  listaComprasSchema,
 };

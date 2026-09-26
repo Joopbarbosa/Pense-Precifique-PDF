@@ -390,5 +390,103 @@ describe('GET /render/catalogo/:id?format=html', () => {
   });
 });
 
+// OpenProject #545 (V0.15.0, RN-NOVA-11) — PDF da compra.
+const payloadCompraValido = {
+  empresa: { nome: 'Studio da Ana', email: null, whatsapp: null, logoUrl: null },
+  documento: {
+    numeroFormatado: 'COM-7',
+    status: 'Confirmada',
+    statusCodigo: 'CONFIRMADA',
+    dataCompra: '20/09/2026',
+    fornecedor: 'Papelaria Central',
+    multiplosFornecedores: false,
+    pagamento: 'Pago — Pix',
+    total: 'R$ 295,00',
+    observacoes: 'Entrega na terça.',
+    dataCancelamento: null,
+    observacaoCancelamento: null,
+    itens: [
+      { insumo: 'Papel Couché 250g', fornecedor: 'Papelaria Central', quantidade: '500 un', precoTotal: 'R$ 250,00', precoUnitario: 'R$ 0,50' },
+      { insumo: 'Cola Branca 1L', fornecedor: 'Papelaria Central', quantidade: '3 un', precoTotal: 'R$ 45,00', precoUnitario: 'R$ 15,00' },
+    ],
+  },
+};
+
+describe('GET /render/compra/:id?format=html', () => {
+  test('compra confirmada renderiza itens, total e pagamento, sem faixa de rascunho', async () => {
+    const res = await request(app)
+      .get('/render/compra/e5f5c3a0-0000-0000-0000-000000000050?format=html')
+      .send(payloadCompraValido);
+
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('COM-7');
+    expect(res.text).toContain('Papel Couché 250g');
+    expect(res.text).toContain('R$ 295,00');
+    expect(res.text).toContain('Pago — Pix');
+    expect(res.text).toContain('Entrega na terça.');
+    expect(res.text).not.toContain('Rascunho — compra ainda não confirmada');
+    // modo fornecedor único: sem coluna "Fornecedor" na tabela
+    expect(res.text).not.toContain('>Fornecedor</th>');
+  });
+
+  test('rascunho e cancelada saem destacados; múltiplos fornecedores mostra a coluna', async () => {
+    const rascunho = { ...payloadCompraValido, documento: { ...payloadCompraValido.documento, status: 'Rascunho', statusCodigo: 'RASCUNHO', multiplosFornecedores: true, fornecedor: 'Vários fornecedores' } };
+    const r1 = await request(app).get('/render/compra/e5f5c3a0-0000-0000-0000-000000000051?format=html').send(rascunho);
+    expect(r1.status).toBe(200);
+    expect(r1.text).toContain('Rascunho — compra ainda não confirmada');
+    expect(r1.text).toContain('>Fornecedor</th>');
+
+    const cancelada = { ...payloadCompraValido, documento: { ...payloadCompraValido.documento, status: 'Cancelada', statusCodigo: 'CANCELADA', dataCancelamento: '22/09/2026', observacaoCancelamento: 'Fornecedor entregou o pedido errado.' } };
+    const r2 = await request(app).get('/render/compra/e5f5c3a0-0000-0000-0000-000000000052?format=html').send(cancelada);
+    expect(r2.text).toContain('Compra cancelada');
+    expect(r2.text).toContain('Fornecedor entregou o pedido errado.');
+  });
+
+  test('statusCodigo fora do enum retorna 400', async () => {
+    const payload = { ...payloadCompraValido, documento: { ...payloadCompraValido.documento, statusCodigo: 'PAGA' } };
+    const res = await request(app).get('/render/compra/e5f5c3a0-0000-0000-0000-000000000053?format=html').send(payload);
+    expect(res.status).toBe(400);
+    expect(res.body.detalhes.some((d) => d.campo === 'documento.statusCodigo')).toBe(true);
+  });
+});
+
+// OpenProject #547 (V0.15.0, RN-NOVA-14) — PDF da lista de compras.
+const payloadListaValido = {
+  empresa: { nome: 'Studio da Ana', email: null, whatsapp: null, logoUrl: null },
+  documento: {
+    numeroFormatado: 'LST-3',
+    dataGeracao: '26/09/2026',
+    quantidadeItens: 3,
+    grupos: [
+      { fornecedor: 'Atacado Arte', itens: [{ insumo: 'Cola Branca 1L', unidade: 'un', quantidade: '4', precoReferencia: 'R$ 13,50' }] },
+      { fornecedor: 'Papelaria Central', itens: [{ insumo: 'Papel Couché 250g', unidade: 'un', quantidade: '100', precoReferencia: 'R$ 0,50' }] },
+      { fornecedor: 'Sem fornecedor', itens: [{ insumo: 'Papel Kraft', unidade: 'folha', quantidade: '2,5', precoReferencia: null }] },
+    ],
+  },
+};
+
+describe('GET /render/lista-compras/:id?format=html', () => {
+  test('agrupa por fornecedor e mostra "—" sem preço de referência', async () => {
+    const res = await request(app)
+      .get('/render/lista-compras/e5f5c3a0-0000-0000-0000-000000000060?format=html')
+      .send(payloadListaValido);
+
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('LST-3');
+    expect(res.text).toContain('Atacado Arte');
+    expect(res.text).toContain('Sem fornecedor');
+    expect(res.text).toContain('R$ 13,50');
+    expect(res.text).toContain('Papel Kraft');
+    expect(res.text).toContain('—');
+    expect(res.text.indexOf('Atacado Arte')).toBeLessThan(res.text.indexOf('Sem fornecedor'));
+  });
+
+  test('quantidadeItens não inteiro retorna 400', async () => {
+    const payload = { ...payloadListaValido, documento: { ...payloadListaValido.documento, quantidadeItens: '3' } };
+    const res = await request(app).get('/render/lista-compras/e5f5c3a0-0000-0000-0000-000000000061?format=html').send(payload);
+    expect(res.status).toBe(400);
+  });
+});
+
 // Testes de format=pdf ficam em render.pdf.test.js — precisam mockar `puppeteer-core` e setar
 // RENDER_TIMEOUT_SECONDS baixo antes do require de `../index`, o que exige módulo isolado.
