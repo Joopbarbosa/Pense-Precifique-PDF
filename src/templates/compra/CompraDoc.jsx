@@ -10,6 +10,8 @@ const COLORS = require('../tokens.js');
 // OpenProject #545 (V0.15.0, RN-NOVA-11) — documento de compra de insumos (COM-N): dados da empresa,
 // status (RASCUNHO e CANCELADA destacados — não é compra efetivada), data, fornecedor(es), pagamento,
 // linhas (insumo, [fornecedor], quantidade, preço total, preço unitário pago), total e observações.
+// #576 (RN-NOVA-28): com desconto, as linhas mostram Preço cheio / Desconto / Preço pago e o total traz
+// total cheio, descontos (e o da nota, como digitado) antes do total pago.
 // Tudo chega formatado do backend; valor não informado vem "—".
 const COR_STATUS = { CONFIRMADA: COLORS.teal, RASCUNHO: COLORS.orange, CANCELADA: COLORS.red };
 
@@ -61,6 +63,8 @@ const styles = {
   },
   totalLabel: { fontSize: '11px', fontWeight: 600, color: COLORS.textMuted, textTransform: 'uppercase', letterSpacing: '0.06em' },
   totalValor: { fontSize: '18px', fontWeight: 'bold', color: COLORS.orange },
+  resumoDesconto: { marginTop: '10px', marginLeft: 'auto', minWidth: '220px', fontSize: '10.5px', color: COLORS.textMuted },
+  resumoLinha: { display: 'flex', justifyContent: 'space-between', gap: '16px', padding: '2px 16px' },
   cancelamento: { marginTop: '18px', fontSize: '10.5px', color: COLORS.red },
 };
 
@@ -80,7 +84,13 @@ function CompraDoc({ empresa, documento }) {
     { titulo: 'Insumo', campo: 'insumo', destaque: true },
     ...(documento.multiplosFornecedores ? [{ titulo: 'Fornecedor', campo: 'fornecedor' }] : []),
     { titulo: 'Qtd', campo: 'quantidade', numerico: true },
-    { titulo: 'Preço total', campo: 'precoTotal', numerico: true },
+    ...(documento.temDesconto
+      ? [
+          { titulo: 'Preço cheio', campo: 'precoCheio', numerico: true },
+          { titulo: 'Desconto', campo: 'desconto', numerico: true },
+          { titulo: 'Preço pago', campo: 'precoTotal', numerico: true },
+        ]
+      : [{ titulo: 'Preço total', campo: 'precoTotal', numerico: true }]),
     { titulo: 'Preço unit.', campo: 'precoUnitario', numerico: true },
   ];
 
@@ -114,10 +124,25 @@ function CompraDoc({ empresa, documento }) {
     React.createElement('div', { style: styles.secaoLabel }, 'Itens'),
     React.createElement(TabelaColunas, { colunas, linhas: documento.itens }),
 
+    documento.temDesconto
+      ? React.createElement(
+          'div',
+          { style: styles.resumoDesconto },
+          React.createElement('div', { style: styles.resumoLinha },
+            React.createElement('span', null, 'Total cheio'), React.createElement('span', null, documento.totalCheio)),
+          documento.descontoNota
+            ? React.createElement('div', { style: styles.resumoLinha },
+                React.createElement('span', null, 'Desconto na nota'), React.createElement('span', null, documento.descontoNota))
+            : null,
+          React.createElement('div', { style: styles.resumoLinha },
+            React.createElement('span', null, 'Descontos'), React.createElement('span', null, '− ' + documento.totalDescontos)),
+        )
+      : null,
+
     React.createElement(
       'div',
       { style: styles.totalBox },
-      React.createElement('span', { style: styles.totalLabel }, 'Total'),
+      React.createElement('span', { style: styles.totalLabel }, documento.temDesconto ? 'Total pago' : 'Total'),
       React.createElement('span', { style: styles.totalValor }, documento.total),
     ),
 

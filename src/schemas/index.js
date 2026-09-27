@@ -194,6 +194,9 @@ const itemCompraPdfSchema = z.object({
   quantidade: z.string(),
   precoTotal: z.string(),
   precoUnitario: z.string(),
+  // #576 (V0.15.0, RN-NOVA-28) — opcionais para aceitar payloads anteriores ao desconto.
+  precoCheio: z.string().optional(),
+  desconto: z.string().optional(),
 });
 
 const documentoCompraSchema = z.object({
@@ -209,6 +212,10 @@ const documentoCompraSchema = z.object({
   dataCancelamento: z.string().nullable(),
   observacaoCancelamento: z.string().nullable(),
   itens: z.array(itemCompraPdfSchema),
+  temDesconto: z.boolean().optional().default(false),
+  totalCheio: z.string().optional(),
+  totalDescontos: z.string().optional(),
+  descontoNota: z.string().nullable().optional(),
 });
 
 const compraSchema = z.object({

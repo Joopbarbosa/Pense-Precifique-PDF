@@ -442,6 +442,22 @@ describe('GET /render/compra/:id?format=html', () => {
     expect(r2.text).toContain('Fornecedor entregou o pedido errado.');
   });
 
+  test('#576 — com desconto mostra preço cheio, desconto, preço pago e o desconto da nota', async () => {
+    const comDesconto = { ...payloadCompraValido, documento: { ...payloadCompraValido.documento,
+      total: 'R$ 67,45', temDesconto: true, totalCheio: 'R$ 75,90', totalDescontos: 'R$ 8,45', descontoNota: '5% (R$ 3,55)',
+      itens: [
+        { insumo: 'Fita de cetim', fornecedor: null, quantidade: '10 m', precoCheio: 'R$ 30,00', desconto: 'R$ 4,35', precoTotal: 'R$ 25,65', precoUnitario: 'R$ 2,565' },
+        { insumo: 'Cola Branca 1L', fornecedor: null, quantidade: '3 un', precoCheio: 'R$ 45,90', desconto: 'R$ 4,10', precoTotal: 'R$ 41,80', precoUnitario: 'R$ 13,9333' },
+      ] } };
+    const res = await request(app).get('/render/compra/e5f5c3a0-0000-0000-0000-000000000053?format=html').send(comDesconto);
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('>Preço cheio</th>');
+    expect(res.text).toContain('>Preço pago</th>');
+    expect(res.text).toContain('5% (R$ 3,55)');
+    expect(res.text).toContain('R$ 75,90');
+    expect(res.text).toContain('Total pago');
+  });
+
   test('statusCodigo fora do enum retorna 400', async () => {
     const payload = { ...payloadCompraValido, documento: { ...payloadCompraValido.documento, statusCodigo: 'PAGA' } };
     const res = await request(app).get('/render/compra/e5f5c3a0-0000-0000-0000-000000000053?format=html').send(payload);
