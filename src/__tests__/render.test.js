@@ -497,6 +497,14 @@ describe('GET /render/lista-compras/:id?format=html', () => {
     expect(res.text.indexOf('Atacado Arte')).toBeLessThan(res.text.indexOf('Sem fornecedor'));
   });
 
+  test('mostra o status da lista e "Rascunho salvo em" no rascunho (#596)', async () => {
+    const payload = { ...payloadListaValido, documento: { ...payloadListaValido.documento, status: 'Rascunho', rascunho: true } };
+    const res = await request(app).get('/render/lista-compras/e5f5c3a0-0000-0000-0000-000000000062?format=html').send(payload);
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('Status: Rascunho');
+    expect(res.text).toContain('Rascunho salvo em');
+  });
+
   test('quantidadeItens não inteiro retorna 400', async () => {
     const payload = { ...payloadListaValido, documento: { ...payloadListaValido.documento, quantidadeItens: '3' } };
     const res = await request(app).get('/render/lista-compras/e5f5c3a0-0000-0000-0000-000000000061?format=html').send(payload);

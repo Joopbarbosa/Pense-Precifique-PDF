@@ -24,6 +24,7 @@ const styles = {
   },
   headerRightLabel: { fontSize: '11px', fontWeight: 600, color: COLORS.teal, textTransform: 'uppercase', letterSpacing: '0.08em' },
   headerRightNumero: { fontSize: '24px', fontWeight: 'bold', color: COLORS.ink, letterSpacing: '-0.02em', marginTop: '2px' },
+  headerRightStatus: { fontSize: '11px', fontWeight: 600, color: COLORS.textSecondary, marginTop: '4px' },
   grupo: { marginTop: '20px', breakInside: 'avoid' },
 };
 
@@ -52,6 +53,8 @@ function ListaComprasDoc({ empresa, documento }) {
       { empresa },
       React.createElement('div', { style: styles.headerRightLabel }, 'Lista de compras'),
       React.createElement('div', { style: styles.headerRightNumero }, documento.numeroFormatado),
+      // #596 (RN-NOVA-41) — status da lista.
+      documento.status && React.createElement('div', { style: styles.headerRightStatus }, 'Status: ' + documento.status),
     ),
 
     documento.grupos.map((grupo, i) =>
@@ -69,7 +72,7 @@ function ListaComprasDoc({ empresa, documento }) {
     React.createElement(
       'div',
       { style: { marginTop: 'auto' } },
-      React.createElement(DocumentFooter, null, 'Lista gerada em ' + documento.dataGeracao + ' com ', React.createElement('strong', null,
+      React.createElement(DocumentFooter, null, (documento.rascunho ? 'Rascunho salvo em ' : 'Lista gerada em ') + documento.dataGeracao + ' com ', React.createElement('strong', null,
         documento.quantidadeItens + ' ite' + (documento.quantidadeItens === 1 ? 'm' : 'ns') + '.')),
     ),
   );

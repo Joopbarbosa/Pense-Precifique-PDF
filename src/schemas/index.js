@@ -241,6 +241,9 @@ const grupoListaComprasPdfSchema = z.object({
 const documentoListaComprasSchema = z.object({
   numeroFormatado: z.string(),
   dataGeracao: z.string(),
+  // #596 (RN-NOVA-41, adendo 2) — status da lista; rascunho mostra "salvo em" no rodapé.
+  status: z.string().nullish(),
+  rascunho: z.boolean().nullish(),
   quantidadeItens: z.number().int(),
   grupos: z.array(grupoListaComprasPdfSchema),
 });
