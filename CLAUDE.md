@@ -92,3 +92,50 @@ de ambiente do compose).
 
 Ver `docker-compose.yml` na raiz do projeto (`Pense & Precifique/`) para a definição do serviço
 `pense-precifique-pdf` dentro do compose geral.
+
+---
+
+## 7. Review guidelines
+
+Mapeamento de gravidade entre a escala do Codex e a do pipeline
+(`gravidade.md` do processo — fonte única, não duplicar critério aqui):
+
+| Codex | Pipeline | Efeito no gate/QA |
+|---|---|---|
+| P0 | Urgente | Bloqueia, corrigir sempre |
+| P1 | Alta | Bloqueia, corrigir sempre |
+| P2 | Normal | Gestor decide |
+| P3 | Baixa | Gestor decide |
+
+### AI slop — o que sempre vale achado de qualidade
+
+Cada item abaixo, quando encontrado no diff revisado, é achado de
+qualidade de código com local exato (`arquivo:linha`) e correção
+sugerida em texto — nunca reescrita direta pelo Codex:
+
+- Duplicação de lógica que já existe em outro lugar do módulo/serviço.
+- Over-engineering: abstração, camada ou parâmetro sem uso real no
+  código atual ou previsto na `SPEC`.
+- Comentário óbvio, que só repete o que a linha seguinte já diz.
+- `try/catch` ou checagem de nulo sem efeito (engole exceção sem
+  tratar, ou verifica um valor que o tipo já garante não nulo).
+- Cast para `any`/tipo genérico que descarta a checagem de tipo sem
+  necessidade documentada.
+- Código morto: função, branch ou arquivo sem nenhuma chamada real.
+- Linha sem efeito observável no comportamento nem na legibilidade.
+- Stub ou implementação vazia deixada como se estivesse completa.
+- Lógica de negócio (cálculo, regra, validação de `SPEC`) implementada
+  no Frontend quando deveria estar no Backend — ou o inverso, quando a
+  `SPEC` definir onde a regra vive.
+
+Gravidade de cada item segue `gravidade.md`, linha "Qualidade de código
+(QA)": o item que esconde ou pode esconder um bug real de comportamento
+é Alta; o item sem efeito funcional é Normal ou Baixa.
+
+### Convenções do projeto
+
+As convenções específicas deste repositório (padrões consolidados,
+anti-padrões conhecidos, legado e exceções) vivem no restante deste
+`CLAUDE.md` — a seção "Anti-padrões do projeto" (ou equivalente) é a
+referência que o Codex cita quando o achado é específico deste
+repositório, não um item genérico da lista acima.
