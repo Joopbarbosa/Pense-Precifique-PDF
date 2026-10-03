@@ -7,6 +7,8 @@ const {
   reciboEstornoSchema,
   reciboPagamentoSchema,
   catalogoSchema,
+  compraSchema,
+  listaComprasSchema,
 } = require('../schemas');
 const { renderHtmlDocument } = require('../renderer/htmlRenderer');
 const { renderPdfBuffer, RenderTimeoutError } = require('../renderer/pdfRenderer');
@@ -16,6 +18,8 @@ const MultaDoc = require('../templates/pdf-multa/MultaDoc.jsx');
 const ReciboEstornoDoc = require('../templates/recibo-estorno/ReciboEstornoDoc.jsx');
 const ReciboPagamentoDoc = require('../templates/recibo-pagamento/ReciboPagamentoDoc.jsx');
 const CatalogoDoc = require('../templates/catalogo/CatalogoDoc.jsx');
+const CompraDoc = require('../templates/compra/CompraDoc.jsx');
+const ListaComprasDoc = require('../templates/lista-compras/ListaComprasDoc.jsx');
 
 const router = express.Router();
 
@@ -31,6 +35,9 @@ const TEMPLATES = {
   'recibo-estorno': { schema: reciboEstornoSchema, Component: ReciboEstornoDoc },
   'recibo-pagamento': { schema: reciboPagamentoSchema, Component: ReciboPagamentoDoc },
   catalogo: { schema: catalogoSchema, Component: CatalogoDoc },
+  // V0.15.0 — #545/#547
+  compra: { schema: compraSchema, Component: CompraDoc },
+  'lista-compras': { schema: listaComprasSchema, Component: ListaComprasDoc },
 };
 
 async function handleRender(req, res) {

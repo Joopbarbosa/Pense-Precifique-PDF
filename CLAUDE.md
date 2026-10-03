@@ -7,7 +7,8 @@
 
 ## 1. O que este serviço faz
 
-Renderiza documentos (orçamentos, recibos, multas) em HTML (para preview no frontend) e PDF
+Renderiza documentos (orçamentos, recibos, multas, catálogo e, desde V0.15.0, compra e lista de
+compras) em HTML (para preview no frontend) e PDF
 (para download, via backend). Um único template React serve os dois formatos — elimina
 divergência visual entre o que a artesã vê no preview e o que a cliente final recebe no PDF.
 
@@ -36,8 +37,10 @@ rota nova — o contrato `GET /render/:tipo/:id?format=` já é genérico.
 ## 3. Verificar antes de criar
 
 Antes de criar qualquer componente, sempre checar `src/templates/components/` primeiro —
-`DocumentHeader`, `DocumentFooter`, `ItemTable`, `SignatureBlock` já existem e cobrem os
-elementos mais comuns entre documentos. Duplicação encontrada deve ser reportada antes de
+`DocumentHeader`, `DocumentFooter`, `ItemTable`, `SignatureBlock`, `TabelaColunas` (tabela com
+colunas configuráveis, usada por compra e lista de compras) e as `Secao*` (`SecaoStatus`,
+`SecaoTitulo`, `SecaoObservacoes`, `SecaoDatasCliente`, `SecaoCalculadora`, `SecaoProximosPassos`)
+já existem e cobrem os elementos mais comuns entre documentos. Duplicação encontrada deve ser reportada antes de
 implementar, nunca corrigida silenciosamente sem avisar.
 
 ---
@@ -63,8 +66,9 @@ implementar, nunca corrigida silenciosamente sem avisar.
   `#F97316`, etc.) — extraído no commit `6e3ec8b`, gatilho atingido na Epic #248 (novos tipos de
   documento reaproveitando as cores do template de Orçamento). Reaproveitado hoje pelos 4
   componentes compartilhados (`DocumentHeader.jsx`, `ItemTable.jsx`, `DocumentFooter.jsx`) e pelos
-  5 templates de documento (`OrcamentoDoc.jsx`, `ReciboSinalDoc.jsx`, `MultaDoc.jsx`,
-  `ReciboEstornoDoc.jsx`, `ReciboPagamentoDoc.jsx`). Não há mais duplicação de cor hardcoded a
+  templates de documento (`OrcamentoDoc.jsx`, `ReciboSinalDoc.jsx`, `MultaDoc.jsx`,
+  `ReciboEstornoDoc.jsx`, `ReciboPagamentoDoc.jsx` e, na V0.15.0, `CompraDoc.jsx`/
+  `ListaComprasDoc.jsx`, que também tiram a cor do status de `tokens.js`). Não há mais duplicação de cor hardcoded a
   corrigir — qualquer cor nova do design system entra em `tokens.js`, não direto no componente.
 
 ---
