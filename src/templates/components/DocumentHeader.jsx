@@ -55,6 +55,13 @@ function IconeTelefone() {
   );
 }
 
+/** Converte o objeto de estilo do placeholder em CSS inline (para o script de fallback do logo). */
+function cssDe(estilo) {
+  return Object.entries(estilo)
+    .map(([prop, valor]) => `${prop.replace(/[A-Z]/g, (m) => '-' + m.toLowerCase())}:${valor}`)
+    .join(';');
+}
+
 function inicialDaEmpresa(nome) {
   if (!nome) {
     return '?';
@@ -65,8 +72,17 @@ function inicialDaEmpresa(nome) {
 // RN-NOVA-1 — logoUrl null (ou fetch de imagem falho) sempre vira um placeholder com iniciais,
 // nunca espaço vazio ou erro visual.
 function DocumentHeader({ empresa, children }) {
+  // V0.17.0 #965 (RN-NOVA-20): logo que não carrega vira a inicial. O img leva a inicial e o estilo
+  // do placeholder; o script de renderHtmlDocument troca o img quebrado pelo placeholder (ver htmlRenderer).
   const logo = empresa.logoUrl
-    ? React.createElement('img', { src: empresa.logoUrl, alt: empresa.nome, style: styles.logoImg })
+    ? React.createElement('img', {
+        src: empresa.logoUrl,
+        alt: empresa.nome,
+        style: styles.logoImg,
+        'data-logo-empresa': 'true',
+        'data-inicial': inicialDaEmpresa(empresa.nome),
+        'data-placeholder-css': cssDe(styles.logoPlaceholder),
+      })
     : React.createElement('div', { style: styles.logoPlaceholder }, inicialDaEmpresa(empresa.nome));
 
   return React.createElement(
