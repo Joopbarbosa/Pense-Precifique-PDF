@@ -21,7 +21,8 @@
     "zod": "^3.23.8"
   },
   "overrides": {
-    "basic-ftp": "6.2.1"
+    "basic-ftp": "6.2.1",
+    "proxy-addr": "2.0.8"
   },
   "devDependencies": {
     "jest": "^29.7.0",
