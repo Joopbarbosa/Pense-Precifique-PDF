@@ -82,6 +82,7 @@ function OrcamentoDoc({ empresa, documento }) {
     valorSinal,
     restanteAposSinal,
     percentualSinal,
+    sinalAte,
     subtotal,
     desconto,
     percentualDesconto,
@@ -110,6 +111,9 @@ function OrcamentoDoc({ empresa, documento }) {
   linhasCalculadora.push({ tipo: 'total', label: 'Total', value: total, corDestaque: COLORS.orange });
   if (sinalAtivo) {
     linhasCalculadora.push({ tipo: 'simples', label: 'Restante após sinal', value: restanteAposSinal });
+    if (sinalAte) {
+      linhasCalculadora.push({ tipo: 'simples', label: 'Sinal até', value: sinalAte });
+    }
   }
 
   const aprovado = status === 'Aprovado';
