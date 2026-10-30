@@ -44,6 +44,21 @@ describe('GET /render/orcamento/:id?format=html', () => {
     expect(res.text).toContain('Bolo Vulcão de Chocolate');
   });
 
+  test('sinalAte aparece como "Sinal até" quando o sinal está ativo e some quando não vem (#1105)', async () => {
+    const com = await request(app)
+      .get('/render/orcamento/e5f5c3a0-0000-0000-0000-000000000090?format=html')
+      .send({ ...payloadValido, documento: { ...payloadValido.documento, sinalAte: '05/11/2026' } });
+    expect(com.status).toBe(200);
+    expect(com.text).toContain('Sinal até');
+    expect(com.text).toContain('05/11/2026');
+
+    const sem = await request(app)
+      .get('/render/orcamento/e5f5c3a0-0000-0000-0000-000000000091?format=html')
+      .send({ ...payloadValido, documento: { ...payloadValido.documento, sinalAte: null } });
+    expect(sem.status).toBe(200);
+    expect(sem.text).not.toContain('Sinal até');
+  });
+
   test('desconto=null não aparece no HTML renderizado', async () => {
     const payload = {
       ...payloadValido,

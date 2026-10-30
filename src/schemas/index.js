@@ -53,6 +53,8 @@ const documentoOrcamentoSchema = z.object({
   emailCliente: z.string().nullable().optional(),
   percentualDesconto: z.string().nullable().optional(),
   percentualSinal: z.string().nullable().optional(),
+  // V0.18.0 #1105: data limite do sinal (dd/mm/aaaa), já formatada pelo backend
+  sinalAte: z.string().nullable().optional(),
 });
 
 const orcamentoSchema = z.object({
