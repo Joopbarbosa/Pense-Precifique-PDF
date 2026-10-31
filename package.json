@@ -18,7 +18,7 @@
     "puppeteer-core": "24.43.1",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "zod": "^3.23.8"
+    "zod": "^3.25.76"
   },
   "overrides": {
     "basic-ftp": "6.2.1",
