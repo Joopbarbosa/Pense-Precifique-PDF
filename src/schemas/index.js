@@ -166,6 +166,30 @@ const reciboPagamentoSchema = z.object({
   documento: documentoReciboPagamentoSchema,
 });
 
+// V0.19.0 #1170 (RN-NOVA-33) — recibo da venda do Caixa. Valores já formatados pelo backend.
+const pagamentoCaixaPdfSchema = z.object({
+  metodo: z.string(),
+  valor: z.string(),
+});
+
+const documentoReciboCaixaSchema = z.object({
+  numeroFormatado: z.string(),
+  dataVenda: z.string(),
+  nomeCliente: z.string().nullable(),
+  telefoneCliente: z.string().nullable().optional(),
+  itens: z.array(itemPdfSchema),
+  subtotal: z.string(),
+  desconto: z.string().nullable(),
+  total: z.string(),
+  pagamentos: z.array(pagamentoCaixaPdfSchema),
+  troco: z.string().nullable(),
+});
+
+const reciboCaixaSchema = z.object({
+  empresa: empresaSchema,
+  documento: documentoReciboCaixaSchema,
+});
+
 // OpenProject #519 (RN-NOVA-8) — catálogo não tem cliente/valores/datas de pedido, é uma listagem
 // de itens (foto + nome + descrição) para a artesã enviar pra cliente final. Schema deliberadamente
 // mais enxuto que os demais — sem herdar campos que não se aplicam a este tipo de documento.
@@ -261,6 +285,7 @@ module.exports = {
   pdfMultaSchema,
   reciboEstornoSchema,
   reciboPagamentoSchema,
+  reciboCaixaSchema,
   catalogoSchema,
   compraSchema,
   listaComprasSchema,

@@ -4,6 +4,7 @@ const {
   pdfMultaSchema,
   reciboEstornoSchema,
   reciboPagamentoSchema,
+  reciboCaixaSchema,
   catalogoSchema,
 } = require('../schemas');
 
@@ -256,5 +257,32 @@ describe('catalogoSchema', () => {
     const payload = JSON.parse(JSON.stringify(payloadValidoCatalogo));
     delete payload.documento.nome;
     expect(catalogoSchema.safeParse(payload).success).toBe(false);
+  });
+});
+
+describe('reciboCaixaSchema', () => {
+  const valido = {
+    empresa: { nome: 'Studio da Ana', email: null, whatsapp: null, logoUrl: null },
+    documento: {
+      numeroFormatado: '12',
+      dataVenda: '31/10/2026',
+      nomeCliente: null,
+      itens: [],
+      subtotal: 'R$ 100,00',
+      desconto: null,
+      total: 'R$ 100,00',
+      pagamentos: [{ metodo: 'Dinheiro', valor: 'R$ 120,00' }],
+      troco: 'R$ 20,00',
+    },
+  };
+
+  test('payload válido passa (cliente e desconto nulos)', () => {
+    expect(reciboCaixaSchema.safeParse(valido).success).toBe(true);
+  });
+
+  test('pagamentos ausente é rejeitado', () => {
+    const p = JSON.parse(JSON.stringify(valido));
+    delete p.documento.pagamentos;
+    expect(reciboCaixaSchema.safeParse(p).success).toBe(false);
   });
 });
