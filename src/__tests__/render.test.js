@@ -529,3 +529,50 @@ describe('GET /render/lista-compras/:id?format=html', () => {
 
 // Testes de format=pdf ficam em render.pdf.test.js — precisam mockar `puppeteer-core` e setar
 // RENDER_TIMEOUT_SECONDS baixo antes do require de `../index`, o que exige módulo isolado.
+
+describe('GET /render/recibo-caixa/:id?format=html', () => {
+  const payload = {
+    empresa: { nome: 'Studio da Ana', email: null, whatsapp: null, logoUrl: null },
+    documento: {
+      numeroFormatado: '12',
+      dataVenda: '31/10/2026',
+      nomeCliente: 'Mariana Costa',
+      itens: [{ nomeProduto: 'Caneca', customizacoes: null, quantidade: '2', precoUnitario: 'R$ 50,00', subtotal: 'R$ 100,00' }],
+      subtotal: 'R$ 100,00',
+      desconto: null,
+      total: 'R$ 100,00',
+      pagamentos: [{ metodo: 'Dinheiro', valor: 'R$ 120,00' }],
+      troco: 'R$ 20,00',
+    },
+  };
+
+  test('retorna 200 com itens, pagamento e troco', async () => {
+    const res = await request(app)
+      .get('/render/recibo-caixa/e5f5c3a0-0000-0000-0000-000000000051?format=html')
+      .send(payload);
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('Mariana Costa');
+    expect(res.text).toContain('Caneca');
+    expect(res.text).toContain('Pago em Dinheiro');
+    expect(res.text).toContain('R$ 20,00');
+  });
+
+  test('sem cliente usa Consumidor', async () => {
+    const p = { ...payload, documento: { ...payload.documento, nomeCliente: null, troco: null } };
+    const res = await request(app)
+      .get('/render/recibo-caixa/e5f5c3a0-0000-0000-0000-000000000052?format=html')
+      .send(p);
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('Consumidor');
+    expect(res.text).not.toContain('Troco');
+  });
+
+  test('campo obrigatório faltando retorna 400', async () => {
+    const p = JSON.parse(JSON.stringify(payload));
+    delete p.documento.total;
+    const res = await request(app)
+      .get('/render/recibo-caixa/e5f5c3a0-0000-0000-0000-000000000053?format=html')
+      .send(p);
+    expect(res.status).toBe(400);
+  });
+});
