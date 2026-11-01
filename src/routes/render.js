@@ -27,6 +27,7 @@ const router = express.Router();
 
 const RENDER_TIMEOUT_SECONDS = Number(process.env.RENDER_TIMEOUT_SECONDS) || 30;
 const MAX_PAGINAS = Number(process.env.MAX_PAGINAS) || 10;
+const MAX_PAGINAS_DOCUMENTO = MAX_PAGINAS * 2;
 
 // Registro por tipo — novo tipo de documento (recibo-sinal, pdf-multa, ...) só precisa de uma
 // entrada nova aqui, sem rota nova (contrato genérico /render/:tipo/:id).
@@ -86,11 +87,47 @@ async function handleRender(req, res) {
   }
 
   const pdfDoc = await PDFDocument.load(pdfBuffer);
-  if (pdfDoc.getPageCount() > MAX_PAGINAS) {
-    return res.status(413).json({ message: 'Documento muito extenso. Entre em contato com o suporte.' });
+  const filename = `${tipo}-${parsed.data.documento.numeroFormatado}.pdf`;
+  const totalPaginas = pdfDoc.getPageCount();
+  res.set('X-Pdf-Page-Count', String(totalPaginas));
+  if (totalPaginas > MAX_PAGINAS_DOCUMENTO) {
+    return res.status(413).json({
+      tipo: 'BLOQUEIO',
+      message: 'Este documento tem mais de 20 páginas e não pode ser gerado em até 2 partes.',
+      totalPaginas,
+    });
   }
 
-  const filename = `${tipo}-${parsed.data.documento.numeroFormatado}.pdf`;
+  if (totalPaginas > MAX_PAGINAS && req.query.dividir !== 'true') {
+    return res.status(409).json({
+      tipo: 'AVISO',
+      message: 'Este documento tem mais de 10 páginas. Você pode dividi-lo em 2 PDFs para continuar.',
+      totalPaginas,
+      dividirDisponivel: true,
+    });
+  }
+
+  if (req.query.dividir === 'true' && totalPaginas > MAX_PAGINAS) {
+    const { PDFDocument: Pdf, StandardFonts, rgb } = require('pdf-lib');
+    const corte = Math.ceil(totalPaginas / 2);
+    const paginas = [[0, corte], [corte, totalPaginas]];
+    const partes = [];
+    for (let indice = 0; indice < paginas.length; indice += 1) {
+      const [inicio, fim] = paginas[indice];
+      const parte = await Pdf.create();
+      const fonte = await parte.embedFont(StandardFonts.Helvetica);
+      const copias = await parte.copyPages(pdfDoc, Array.from({ length: fim - inicio }, (_, i) => inicio + i));
+      copias.forEach((pagina) => {
+        pagina.drawText(`parte ${indice + 1} de 2`, {
+          x: 36, y: 18, size: 8, font: fonte, color: rgb(0.35, 0.35, 0.35),
+        });
+        parte.addPage(pagina);
+      });
+      partes.push({ numeroParte: indice + 1, totalPaginas: fim - inicio, pdfBase64: Buffer.from(await parte.save()).toString('base64') });
+    }
+    return res.status(200).json({ totalPaginas, partes });
+  }
+
   res.set('Content-Type', 'application/pdf');
   res.set('Content-Disposition', `attachment; filename="${filename}"`);
   return res.status(200).send(pdfBuffer);
