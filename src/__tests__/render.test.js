@@ -576,3 +576,55 @@ describe('GET /render/recibo-caixa/:id?format=html', () => {
     expect(res.status).toBe(400);
   });
 });
+
+describe('GET /render/orcamento-descritivo/:id?format=html (V0.19.0 #382)', () => {
+  const payload = {
+    empresa: { nome: 'Studio da Ana', email: null, whatsapp: null, logoUrl: null },
+    documento: {
+      numeroFormatado: 'ORC-7',
+      titulo: 'Cardápio de festa',
+      nomeCliente: 'Mariana Costa',
+      telefoneCliente: null,
+      dataEmissao: '01/11/2026',
+      observacoes: 'Escolha com antecedência.',
+      opcoes: [
+        { nome: 'Bolo Vulcão (Casa)', quantidadeUnidade: '1 un', precoReferencia: 'R$ 150,00' },
+        { nome: 'Docinhos', quantidadeUnidade: null, precoReferencia: 'R$ 2,50' },
+      ],
+    },
+  };
+
+  test('retorna 200 com título, opções e preço de referência, sem total nem pagamento', async () => {
+    const res = await request(app).get('/render/orcamento-descritivo/e5f5c3a0-0000-0000-0000-000000000071?format=html').send(payload);
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('Cardápio de festa');
+    expect(res.text).toContain('Bolo Vulcão (Casa)');
+    expect(res.text).toContain('R$ 150,00');
+    expect(res.text).toContain('Mariana Costa');
+    expect(res.text).not.toContain('Total');
+    expect(res.text).not.toContain('Sinal');
+    expect(res.text).not.toContain('Forma de pagamento');
+  });
+
+  test('sem cliente retorna 200', async () => {
+    const p = { ...payload, documento: { ...payload.documento, nomeCliente: null } };
+    const res = await request(app).get('/render/orcamento-descritivo/e5f5c3a0-0000-0000-0000-000000000072?format=html').send(p);
+    expect(res.status).toBe(200);
+  });
+
+  test('zero opções ou mais de 100 retorna 400', async () => {
+    const vazio = { ...payload, documento: { ...payload.documento, opcoes: [] } };
+    const r1 = await request(app).get('/render/orcamento-descritivo/e5f5c3a0-0000-0000-0000-000000000073?format=html').send(vazio);
+    expect(r1.status).toBe(400);
+    const muitas = { ...payload, documento: { ...payload.documento, opcoes: Array(101).fill(payload.documento.opcoes[0]) } };
+    const r2 = await request(app).get('/render/orcamento-descritivo/e5f5c3a0-0000-0000-0000-000000000074?format=html').send(muitas);
+    expect(r2.status).toBe(400);
+  });
+
+  test('campo obrigatório faltando retorna 400', async () => {
+    const p = JSON.parse(JSON.stringify(payload));
+    delete p.documento.titulo;
+    const res = await request(app).get('/render/orcamento-descritivo/e5f5c3a0-0000-0000-0000-000000000075?format=html').send(p);
+    expect(res.status).toBe(400);
+  });
+});

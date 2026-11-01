@@ -190,6 +190,29 @@ const reciboCaixaSchema = z.object({
   documento: documentoReciboCaixaSchema,
 });
 
+// V0.19.0 #382 (RN-NOVA-44, DT-NOVA-10) — orçamento Descritivo (cardápio). Sem total, desconto, sinal nem
+// forma de pagamento; de 1 a 100 opções com o preço de referência já formatado pelo backend.
+const opcaoDescritivoPdfSchema = z.object({
+  nome: z.string(),
+  quantidadeUnidade: z.string().nullable(),
+  precoReferencia: z.string(),
+});
+
+const documentoOrcamentoDescritivoSchema = z.object({
+  numeroFormatado: z.string(),
+  titulo: z.string(),
+  nomeCliente: z.string().nullable(),
+  telefoneCliente: z.string().nullable().optional(),
+  dataEmissao: z.string(),
+  observacoes: z.string().nullable(),
+  opcoes: z.array(opcaoDescritivoPdfSchema).min(1).max(100),
+});
+
+const orcamentoDescritivoSchema = z.object({
+  empresa: empresaSchema,
+  documento: documentoOrcamentoDescritivoSchema,
+});
+
 // OpenProject #519 (RN-NOVA-8) — catálogo não tem cliente/valores/datas de pedido, é uma listagem
 // de itens (foto + nome + descrição) para a artesã enviar pra cliente final. Schema deliberadamente
 // mais enxuto que os demais — sem herdar campos que não se aplicam a este tipo de documento.
@@ -286,6 +309,7 @@ module.exports = {
   reciboEstornoSchema,
   reciboPagamentoSchema,
   reciboCaixaSchema,
+  orcamentoDescritivoSchema,
   catalogoSchema,
   compraSchema,
   listaComprasSchema,
