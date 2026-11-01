@@ -98,6 +98,18 @@ describe('GET /render/orcamento/:id?format=pdf', () => {
     expect(browserMock.close).toHaveBeenCalledTimes(1);
   });
 
+  test('10 páginas são entregues sem aviso', async () => {
+    const pdfBuffer = await criarPdfValido(10);
+    const { pageMock } = mockBrowser({ pdf: jest.fn().mockResolvedValue(pdfBuffer) });
+    const res = await request(app)
+      .get('/render/orcamento/e5f5c3a0-0000-0000-0000-000000000014?format=pdf')
+      .send(payloadValido).buffer().parse(binaryParser);
+    expect(res.status).toBe(200);
+    expect(res.headers['x-pdf-page-count']).toBe('10');
+    expect(res.headers['content-type']).toContain('application/pdf');
+    expect(pageMock.setContent.mock.calls[0][0]).toContain('break-inside:avoid');
+  });
+
   test('timeout na geração retorna 408 e garante que browser.close() foi chamado', async () => {
     // setContent nunca resolve — força a corrida contra o timeout de RENDER_TIMEOUT_SECONDS=1.
     const { browserMock } = mockBrowser({ setContent: jest.fn(() => new Promise(() => {})) });
@@ -110,15 +122,50 @@ describe('GET /render/orcamento/:id?format=pdf', () => {
     expect(browserMock.close).toHaveBeenCalledTimes(1);
   }, 10000);
 
-  test('documento com mais de 10 páginas retorna 413', async () => {
+  test('informa a contagem e divide 11 páginas sem exceder 10 em cada parte', async () => {
     const pdfBufferGrande = await criarPdfValido(11);
     mockBrowser({ pdf: jest.fn().mockResolvedValue(pdfBufferGrande) });
 
-    const res = await request(app)
+    const aviso = await request(app)
       .get('/render/orcamento/e5f5c3a0-0000-0000-0000-000000000012?format=pdf')
       .send(payloadValido);
+    expect(aviso.status).toBe(409);
+    expect(aviso.body.tipo).toBe('AVISO');
+    expect(aviso.body.totalPaginas).toBe(11);
+    expect(aviso.body.dividirDisponivel).toBe(true);
 
+    const res = await request(app)
+      .get('/render/orcamento/e5f5c3a0-0000-0000-0000-000000000012?format=pdf&dividir=true')
+      .send(payloadValido);
+
+    expect(res.status).toBe(200);
+    expect(res.body.totalPaginas).toBe(11);
+    expect(res.body.partes.map((p) => p.totalPaginas)).toEqual([6, 5]);
+    expect(res.body.partes.map((p) => p.numeroParte)).toEqual([1, 2]);
+    for (const p of res.body.partes) {
+      const parte = await PDFDocument.load(Buffer.from(p.pdfBase64, 'base64'));
+      expect(parte.getPageCount()).toBeLessThanOrEqual(10);
+      expect(parte.getPageCount()).toBe(p.totalPaginas);
+    }
+  });
+
+  test('documento com 21 páginas é bloqueado com mensagem clara', async () => {
+    mockBrowser({ pdf: jest.fn().mockResolvedValue(await criarPdfValido(21)) });
+    const res = await request(app)
+      .get('/render/orcamento/e5f5c3a0-0000-0000-0000-000000000013?format=pdf')
+      .send(payloadValido);
     expect(res.status).toBe(413);
-    expect(res.body.message).toBe('Documento muito extenso. Entre em contato com o suporte.');
+    expect(res.body.tipo).toBe('BLOQUEIO');
+    expect(res.body.totalPaginas).toBe(21);
+    expect(res.body.message).toContain('mais de 20 páginas');
+  });
+
+  test('20 páginas podem ser divididas em 10 e 10', async () => {
+    mockBrowser({ pdf: jest.fn().mockResolvedValue(await criarPdfValido(20)) });
+    const res = await request(app)
+      .get('/render/orcamento/e5f5c3a0-0000-0000-0000-000000000015?format=pdf&dividir=true')
+      .send(payloadValido);
+    expect(res.status).toBe(200);
+    expect(res.body.partes.map((parte) => parte.totalPaginas)).toEqual([10, 10]);
   });
 });

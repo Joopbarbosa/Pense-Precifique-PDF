@@ -80,7 +80,7 @@ function ItemTable({ itens, titulo, icone, corDestaque, nota }) {
         itens.map((item, index) =>
           React.createElement(
             'tr',
-            { key: index },
+            { key: index, style: { breakInside: 'avoid' } },
             React.createElement('td', { style: { ...styles.tdBase, ...styles.nomeProduto } }, item.nomeProduto),
             React.createElement(
               'td',
