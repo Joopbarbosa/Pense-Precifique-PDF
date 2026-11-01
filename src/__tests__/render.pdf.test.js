@@ -100,13 +100,14 @@ describe('GET /render/orcamento/:id?format=pdf', () => {
 
   test('10 páginas são entregues sem aviso', async () => {
     const pdfBuffer = await criarPdfValido(10);
-    mockBrowser({ pdf: jest.fn().mockResolvedValue(pdfBuffer) });
+    const { pageMock } = mockBrowser({ pdf: jest.fn().mockResolvedValue(pdfBuffer) });
     const res = await request(app)
       .get('/render/orcamento/e5f5c3a0-0000-0000-0000-000000000014?format=pdf')
       .send(payloadValido).buffer().parse(binaryParser);
     expect(res.status).toBe(200);
     expect(res.headers['x-pdf-page-count']).toBe('10');
     expect(res.headers['content-type']).toContain('application/pdf');
+    expect(pageMock.setContent.mock.calls[0][0]).toContain('break-inside:avoid');
   });
 
   test('timeout na geração retorna 408 e garante que browser.close() foi chamado', async () => {
