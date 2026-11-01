@@ -22,6 +22,28 @@ const itemPdfSchema = z.object({
   subtotal: z.string(),
 });
 
+// V0.19.0 #445 (RN-NOVA-45, DT-NOVA-11): página 2 "Condições de pagamento" do orçamento de Venda.
+// Dois modos escolhidos pelo backend conforme o status; tudo já chega formatado. Ausente/nulo =
+// sem página 2 (ex.: Descritivo). Limites: no máximo 50 formas (cadastro da empresa) e textos curtos,
+// para a página nunca estourar (PDF-005).
+const texto = (max) => z.string().max(max);
+const condicoesSchema = z.discriminatedUnion('modo', [
+  z.object({
+    modo: z.literal('ANTES_APROVACAO'),
+    formasAceitas: z.array(texto(100)).max(50),
+    aviso: texto(300),
+  }),
+  z.object({
+    modo: z.literal('APROVADO'),
+    forma: texto(100),
+    sinal: texto(100),
+    sinalAte: texto(30).nullable().optional(),
+    saldo: texto(100).nullable().optional(),
+    vencimentoSaldo: texto(30).nullable().optional(),
+    recebido: texto(100),
+  }),
+]);
+
 const documentoOrcamentoSchema = z.object({
   numeroFormatado: z.string(),
   status: z.string(),
@@ -55,6 +77,8 @@ const documentoOrcamentoSchema = z.object({
   percentualSinal: z.string().nullable().optional(),
   // V0.18.0 #1105: data limite do sinal (dd/mm/aaaa), já formatada pelo backend
   sinalAte: z.string().nullable().optional(),
+  // V0.19.0 #445: página 2 de condições (ver condicoesSchema)
+  condicoes: condicoesSchema.nullable().optional(),
 });
 
 const orcamentoSchema = z.object({

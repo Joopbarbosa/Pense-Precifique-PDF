@@ -8,6 +8,7 @@ const SecaoStatus = require('../components/SecaoStatus.jsx');
 const SecaoCalculadora = require('../components/SecaoCalculadora.jsx');
 const SecaoObservacoes = require('../components/SecaoObservacoes.jsx');
 const SecaoProximosPassos = require('../components/SecaoProximosPassos.jsx');
+const SecaoCondicoesPagamento = require('../components/SecaoCondicoesPagamento.jsx');
 const COLORS = require('../tokens.js');
 
 // P-F008 — redesign por componentização de seção (Design aprovado "Preview.html"). Alteração
@@ -15,8 +16,8 @@ const COLORS = require('../tokens.js');
 // feita em Java (PdfMapper.formatarStatusOrcamento), o template só exibe `documento.status` pronto.
 // "Aprovação" fica sempre traço na Seção 3 — o contrato de Orçamento não carrega essa data (só
 // Orçamento aprovado tem `dataAprovacao`, mas esse campo não existe neste schema). Seção 4 mostra
-// forma de pagamento/início estimado sempre como traço — mesma decisão do Design original (esses
-// dados só fazem sentido a partir do sinal/produção, não na fase de orçamento).
+// início estimado como traço. V0.19.0 #445 (RN-NOVA-45): a página 1 não traz mais forma de
+// pagamento, sinal, restante nem data do sinal; isso vai para a página 2 (Condições de pagamento).
 const styles = {
   page: {
     width: '210mm',
@@ -29,6 +30,17 @@ const styles = {
     lineHeight: 1.4,
     display: 'flex',
     flexDirection: 'column',
+  },
+  pagina2: {
+    width: '210mm',
+    boxSizing: 'border-box',
+    padding: '40px',
+    fontFamily: 'Helvetica, Arial, sans-serif',
+    fontSize: '11px',
+    color: COLORS.ink,
+    lineHeight: 1.4,
+    breakBefore: 'page',
+    pageBreakBefore: 'always',
   },
   headerRightLabel: {
     fontSize: '11px',
@@ -77,12 +89,8 @@ function OrcamentoDoc({ empresa, documento }) {
     dataEmissao,
     dataValidade,
     prazoProducao,
-    metodoPagamento,
     sinalAtivo,
-    valorSinal,
-    restanteAposSinal,
-    percentualSinal,
-    sinalAte,
+    condicoes,
     subtotal,
     desconto,
     percentualDesconto,
@@ -100,60 +108,30 @@ function OrcamentoDoc({ empresa, documento }) {
       corValor: COLORS.red,
     });
   }
-  if (sinalAtivo && percentualSinal) {
-    linhasCalculadora.push({
-      tipo: 'destaque-tracejado',
-      label: `Sinal solicitado (${percentualSinal})`,
-      value: valorSinal,
-      corDestaque: COLORS.teal,
-    });
-  }
   linhasCalculadora.push({ tipo: 'total', label: 'Total', value: total, corDestaque: COLORS.orange });
-  if (sinalAtivo) {
-    linhasCalculadora.push({ tipo: 'simples', label: 'Restante após sinal', value: restanteAposSinal });
-    if (sinalAte) {
-      linhasCalculadora.push({ tipo: 'simples', label: 'Sinal até', value: sinalAte });
-    }
-  }
 
   const aprovado = status === 'Aprovado';
   const corTexto = { fontWeight: 'bold', color: '#1F7A6F' };
+  // RN-NOVA-45: o texto fala em aprovar e combinar o pagamento; valores e datas ficam na página 2.
   const passos = aprovado
     ? React.createElement(
         React.Fragment,
         null,
         React.createElement('strong', { style: corTexto }, 'Orçamento aprovado! '),
-        sinalAtivo
-          ? React.createElement(
-              React.Fragment,
-              null,
-              'Assim que o sinal de ',
-              React.createElement('strong', { style: corTexto }, valorSinal),
-              ' for identificado, a produção será iniciada.',
-            )
-          : 'A produção será iniciada em breve.',
+        'As condições de pagamento combinadas estão na página 2. ',
+        sinalAtivo ? 'Assim que o sinal for identificado, a produção será iniciada.' : 'A produção será iniciada em breve.',
       )
     : React.createElement(
         React.Fragment,
         null,
-        'Após a aprovação da cliente',
-        sinalAtivo
-          ? React.createElement(
-              React.Fragment,
-              null,
-              ', será solicitado um sinal de ',
-              React.createElement('strong', { style: corTexto }, percentualSinal),
-              ' (',
-              React.createElement('strong', { style: corTexto }, valorSinal),
-              ') para iniciar a produção',
-            )
-          : ', a produção será iniciada',
+        'Para seguir, aprove este orçamento. ',
+        React.createElement('strong', { style: corTexto }, 'O pagamento e o sinal são combinados na aprovação'),
         '. Prazo estimado de entrega: ',
         React.createElement('strong', { style: { fontWeight: 'bold', color: COLORS.textMuted } }, prazoProducao),
         '.',
       );
 
-  return React.createElement(
+  const pagina1 = React.createElement(
     'div',
     { style: styles.page },
     React.createElement(
@@ -184,7 +162,6 @@ function OrcamentoDoc({ empresa, documento }) {
       icone: React.createElement(IconeCheckCircle),
       tituloStatus: status,
       campos: [
-        { label: 'Forma de pagamento', value: null },
         { label: 'Início estimado', value: null },
       ],
     }),
@@ -216,6 +193,17 @@ function OrcamentoDoc({ empresa, documento }) {
       ),
     ),
   );
+
+  if (!condicoes) {
+    return pagina1;
+  }
+  // Página 2 (RN-NOVA-45): quebra de página forçada; o contêiner não usa a altura mínima da página 1.
+  const pagina2 = React.createElement(
+    'div',
+    { style: styles.pagina2 },
+    React.createElement(SecaoCondicoesPagamento, { condicoes }),
+  );
+  return React.createElement(React.Fragment, null, pagina1, pagina2);
 }
 
 module.exports = OrcamentoDoc;

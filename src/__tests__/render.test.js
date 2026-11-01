@@ -44,19 +44,97 @@ describe('GET /render/orcamento/:id?format=html', () => {
     expect(res.text).toContain('Bolo Vulcão de Chocolate');
   });
 
-  test('sinalAte aparece como "Sinal até" quando o sinal está ativo e some quando não vem (#1105)', async () => {
-    const com = await request(app)
+  test('página 1 não traz mais forma, sinal, restante nem data do sinal (#445, RN-NOVA-45)', async () => {
+    const res = await request(app)
       .get('/render/orcamento/e5f5c3a0-0000-0000-0000-000000000090?format=html')
-      .send({ ...payloadValido, documento: { ...payloadValido.documento, sinalAte: '05/11/2026' } });
-    expect(com.status).toBe(200);
-    expect(com.text).toContain('Sinal até');
-    expect(com.text).toContain('05/11/2026');
+      .send({ ...payloadValido, documento: { ...payloadValido.documento, sinalAte: '05/11/2026', percentualSinal: '50%' } });
+    expect(res.status).toBe(200);
+    for (const proibido of ['Forma de pagamento', 'Restante após sinal', 'Sinal solicitado', 'Sinal até', '05/11/2026']) {
+      expect(res.text).not.toContain(proibido);
+    }
+    expect(res.text).toContain('O pagamento e o sinal são combinados na aprovação');
+    expect(res.text).not.toContain('Condições de pagamento');
+  });
 
-    const sem = await request(app)
-      .get('/render/orcamento/e5f5c3a0-0000-0000-0000-000000000091?format=html')
-      .send({ ...payloadValido, documento: { ...payloadValido.documento, sinalAte: null } });
-    expect(sem.status).toBe(200);
-    expect(sem.text).not.toContain('Sinal até');
+  describe('página 2 de condições (#445, CEN-NOVO-51 e 52)', () => {
+    const avisoFixo = 'Sinal e prazos são combinados quando você aprovar este orçamento.';
+    const comCondicoes = (condicoes) => ({ ...payloadValido, documento: { ...payloadValido.documento, condicoes } });
+    const chamar = (id, corpo) => request(app).get(`/render/orcamento/e5f5c3a0-0000-0000-0000-0000000004${id}?format=html`).send(corpo);
+
+    test('antes da aprovação lista as formas na ordem recebida e o aviso', async () => {
+      const res = await chamar('01', comCondicoes({ modo: 'ANTES_APROVACAO', formasAceitas: ['PIX', 'Dinheiro'], aviso: avisoFixo }));
+      expect(res.status).toBe(200);
+      expect(res.text).toContain('Condições de pagamento');
+      expect(res.text.indexOf('PIX')).toBeLessThan(res.text.indexOf('Dinheiro'));
+      expect(res.text).toContain(avisoFixo);
+      expect(res.text).toContain('break-before:page');
+    });
+
+    test('sem forma aceita mostra só o aviso fixo', async () => {
+      const res = await chamar('02', comCondicoes({ modo: 'ANTES_APROVACAO', formasAceitas: [], aviso: avisoFixo }));
+      expect(res.status).toBe(200);
+      expect(res.text).toContain(avisoFixo);
+      expect(res.text).not.toContain('Formas de pagamento aceitas');
+    });
+
+    test('depois da aprovação mostra forma, sinal, saldo, vencimentos e recebido', async () => {
+      const res = await chamar('03', comCondicoes({
+        modo: 'APROVADO', forma: 'PIX', sinal: 'R$ 500,00 (50%)', sinalAte: '20/11/2026',
+        saldo: 'R$ 500,00', vencimentoSaldo: '15/12/2026', recebido: 'R$ 0,00',
+      }));
+      expect(res.status).toBe(200);
+      for (const esperado of ['PIX', 'R$ 500,00 (50%)', '20/11/2026', '15/12/2026', 'Recebido', 'R$ 0,00']) {
+        expect(res.text).toContain(esperado);
+      }
+      expect(res.text).not.toContain('Formas de pagamento aceitas');
+    });
+
+    test('sem sinal: sem a linha "Sinal até"', async () => {
+      const res = await chamar('04', comCondicoes({
+        modo: 'APROVADO', forma: 'Dinheiro', sinal: 'Sem sinal', sinalAte: null,
+        saldo: 'R$ 1.000,00', vencimentoSaldo: '15/12/2026', recebido: 'R$ 0,00',
+      }));
+      expect(res.status).toBe(200);
+      expect(res.text).toContain('Sem sinal');
+      expect(res.text).not.toContain('Sinal até');
+    });
+
+    test('condicoes nulo ou ausente: sem página 2 (Descritivo)', async () => {
+      for (const [id, corpo] of [['05', comCondicoes(null)], ['06', payloadValido]]) {
+        const res = await chamar(id, corpo);
+        expect(res.status).toBe(200);
+        expect(res.text).not.toContain('Condições de pagamento');
+      }
+    });
+
+    test('entrada hostil em condicoes: 400 com detalhe, nunca 500', async () => {
+      const hostis = [
+        { modo: 'OUTRO', formasAceitas: [], aviso: 'x' },
+        { modo: 'ANTES_APROVACAO', formasAceitas: Array(51).fill('PIX'), aviso: avisoFixo },
+        { modo: 'ANTES_APROVACAO', formasAceitas: ['x'.repeat(101)], aviso: avisoFixo },
+        { modo: 'ANTES_APROVACAO', formasAceitas: [null], aviso: avisoFixo },
+        { modo: 'ANTES_APROVACAO', formasAceitas: 'PIX', aviso: avisoFixo },
+        { modo: 'ANTES_APROVACAO', formasAceitas: [] },
+        { modo: 'APROVADO', forma: 'PIX', sinal: 'x'.repeat(10001), recebido: 'R$ 0,00' },
+        { modo: 'APROVADO', forma: 123, sinal: 'x', recebido: 'R$ 0,00' },
+        { modo: 'APROVADO' },
+        'texto',
+        [],
+        42,
+      ];
+      for (let i = 0; i < hostis.length; i += 1) {
+        const res = await chamar(String(10 + i), comCondicoes(hostis[i]));
+        expect(res.status).toBe(400);
+        expect(res.body.detalhes.some((d) => d.campo.startsWith('documento.condicoes'))).toBe(true);
+      }
+    });
+
+    test('texto com HTML nas formas é escapado (sem injeção)', async () => {
+      const res = await chamar('30', comCondicoes({ modo: 'ANTES_APROVACAO', formasAceitas: ['<script>alert(1)</script>'], aviso: avisoFixo }));
+      expect(res.status).toBe(200);
+      expect(res.text).not.toContain('<script>alert(1)</script>');
+      expect(res.text).toContain('&lt;script&gt;');
+    });
   });
 
   test('desconto=null não aparece no HTML renderizado', async () => {
