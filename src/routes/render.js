@@ -7,6 +7,7 @@ const {
   reciboEstornoSchema,
   reciboPagamentoSchema,
   reciboCaixaSchema,
+  orcamentoDescritivoSchema,
   catalogoSchema,
   compraSchema,
   listaComprasSchema,
@@ -19,6 +20,7 @@ const MultaDoc = require('../templates/pdf-multa/MultaDoc.jsx');
 const ReciboEstornoDoc = require('../templates/recibo-estorno/ReciboEstornoDoc.jsx');
 const ReciboPagamentoDoc = require('../templates/recibo-pagamento/ReciboPagamentoDoc.jsx');
 const ReciboCaixaDoc = require('../templates/recibo-caixa/ReciboCaixaDoc.jsx');
+const OrcamentoDescritivoDoc = require('../templates/orcamento-descritivo/OrcamentoDescritivoDoc.jsx');
 const CatalogoDoc = require('../templates/catalogo/CatalogoDoc.jsx');
 const CompraDoc = require('../templates/compra/CompraDoc.jsx');
 const ListaComprasDoc = require('../templates/lista-compras/ListaComprasDoc.jsx');
@@ -38,6 +40,7 @@ const TEMPLATES = {
   'recibo-estorno': { schema: reciboEstornoSchema, Component: ReciboEstornoDoc },
   'recibo-pagamento': { schema: reciboPagamentoSchema, Component: ReciboPagamentoDoc },
   'recibo-caixa': { schema: reciboCaixaSchema, Component: ReciboCaixaDoc },
+  'orcamento-descritivo': { schema: orcamentoDescritivoSchema, Component: OrcamentoDescritivoDoc },
   catalogo: { schema: catalogoSchema, Component: CatalogoDoc },
   // V0.15.0 — #545/#547
   compra: { schema: compraSchema, Component: CompraDoc },
