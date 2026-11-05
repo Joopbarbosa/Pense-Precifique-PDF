@@ -1,4 +1,4 @@
-FROM node:20-alpine
+FROM node:22-alpine
 
 RUN apk add --no-cache \
     chromium \
@@ -20,7 +20,7 @@ RUN npm ci --omit=dev
 COPY . .
 
 # OP #422 — Semgrep (missing-user-entrypoint/missing-user): sem USER o processo roda
-# como root no container. node:20-alpine já cria o usuário/grupo "node" (uid 1000) —
+# como root no container. node:22-alpine já cria o usuário/grupo "node" (uid 1000) —
 # só falta usá-lo. Chromium já roda com --no-sandbox (ver LAUNCH_ARGS em
 # pdfRenderer.js, necessidade do próprio container, não deste fix) — rodar como
 # não-root aqui é redução de superfície real, não cosmético.
