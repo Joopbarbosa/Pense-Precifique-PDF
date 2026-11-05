@@ -1,4 +1,8 @@
-const puppeteer = require('puppeteer-core');
+// puppeteer-core 25+ é ESM puro; require() de ESM só funciona no Node >= 22.12 (PP-710). Carga
+// preguiçosa: o módulo só é lido quando uma renderização real acontece.
+function carregarPuppeteer() {
+  return require('puppeteer-core');
+}
 
 // Contrato-pdf.md seção 2 — A4, margem 1cm em todos os lados, decisão explícita (motor antigo
 // nunca teve isso configurado). printBackground: true não está na tabela do contrato mas é
@@ -33,6 +37,7 @@ async function gerarPdf(browser, html) {
 // baixo esperado; mais simples e sem risco de estado compartilhado quebrado entre requisições
 // concorrentes. Revisitar com pool se performance virar problema real.
 async function renderPdfBuffer(html, { timeoutSeconds }) {
+  const puppeteer = carregarPuppeteer();
   const browser = await puppeteer.launch({
     executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
     args: LAUNCH_ARGS,

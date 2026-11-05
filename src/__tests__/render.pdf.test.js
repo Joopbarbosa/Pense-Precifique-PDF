@@ -3,7 +3,7 @@
 // isolado, com um valor baixo, em vez de esperar os 30s reais do default.
 process.env.RENDER_TIMEOUT_SECONDS = '1';
 
-jest.mock('puppeteer-core');
+jest.mock('puppeteer-core', () => ({ launch: jest.fn() }));
 
 const request = require('supertest');
 const puppeteer = require('puppeteer-core');
